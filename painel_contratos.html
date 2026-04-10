@@ -483,6 +483,12 @@
       border-bottom: 1px solid color-mix(in srgb, var(--borda) 78%, transparent);
     }
 
+    .area-bloco__cabecalho > div {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
     .area-bloco__titulo {
       margin: 0;
       font-family: 'Roboto Slab', serif;
@@ -600,6 +606,14 @@
       background: color-mix(in srgb, var(--fundo-a) 90%, var(--accent-light));
       color: var(--texto);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .campo--busca input {
+      padding-left: 42px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667a96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 14px center;
+      background-size: 16px 16px;
     }
 
     .campo select:focus,
@@ -890,6 +904,11 @@
 
     .tabela-contratos__linha td {
       color: var(--texto);
+    }
+
+    .tabela-contratos__linha td[data-label]::before {
+      content: attr(data-label);
+      display: none;
     }
 
     .tabela-contratos__muted {
@@ -1258,6 +1277,13 @@
       }
     }
 
+    @media (min-width: 390px) and (max-width: 767px) {
+      .indicadores-grid,
+      .secao-categoria__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 767px) {
       .site-header__inner {
         min-height: auto;
@@ -1343,6 +1369,100 @@
 
       .nav-categorias__item {
         scroll-snap-align: start;
+      }
+
+      .tabela-wrapper {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      .tabela-contratos {
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      .tabela-contratos thead {
+        display: none;
+      }
+
+      .tabela-contratos,
+      .tabela-contratos tbody,
+      .tabela-contratos tr,
+      .tabela-contratos td {
+        display: block;
+        width: 100%;
+      }
+
+      .tabela-contratos tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      .tabela-contratos__linha {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--primaria) 18%, var(--borda));
+        border-radius: 16px;
+        background: linear-gradient(180deg, color-mix(in srgb, #ffffff 80%, var(--accent-light)), var(--fundo-a));
+        box-shadow: var(--sombra-leve);
+      }
+
+      .tabela-contratos__linha td {
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      .tabela-contratos__linha td[data-label]::before {
+        display: block;
+        color: var(--texto-suave);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .tabela-contratos__linha .tabela-contratos__coluna-ano,
+      .tabela-contratos__linha .tabela-contratos__coluna-numero,
+      .tabela-contratos__linha .tabela-contratos__coluna-vigencia,
+      .tabela-contratos__linha .tabela-contratos__coluna-situacao,
+      .tabela-contratos__linha .tabela-contratos__coluna-objeto {
+        grid-column: 1 / -1;
+      }
+
+      .tabela-contratos__linha .tabela-contratos__coluna-numero {
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+        border-bottom: 1px solid color-mix(in srgb, var(--borda) 76%, transparent);
+      }
+
+      .tabela-contratos__linha .tabela-contratos__coluna-numero.tabela-contratos__principal {
+        font-size: 1rem;
+      }
+
+      .tabela-contratos__linha .tabela-contratos__coluna-situacao .badge-situacao {
+        width: fit-content;
+      }
+
+      .tabela-contratos__detalhe {
+        margin-top: -6px;
+      }
+
+      .tabela-contratos__detalhe td {
+        border: 1px solid color-mix(in srgb, var(--primaria) 16%, var(--borda));
+        border-top: 0;
+        border-radius: 0 0 16px 16px;
+        overflow: hidden;
+      }
+
+      .detalhe-contrato {
+        padding: 14px;
       }
 
       .botao-topo {
@@ -2939,11 +3059,15 @@
     }
 
     // Cria uma célula simples, sempre usando textContent para preservar segurança.
-    function criarCelulaTexto(texto, classe) {
+    function criarCelulaTexto(texto, classe, rotulo) {
       const td = document.createElement('td');
 
       if (classe) {
         td.className = classe;
+      }
+
+      if (rotulo) {
+        td.setAttribute('data-label', rotulo);
       }
 
       td.textContent = texto;
@@ -2984,19 +3108,21 @@
       linhaPrincipal.setAttribute('aria-controls', detalheId);
       linhaPrincipal.setAttribute('data-contrato-id', identificadorExpandido);
 
-      linhaPrincipal.appendChild(criarCelulaTexto(String(contrato.ano), 'tabela-contratos__valor'));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.numero, 'tabela-contratos__principal'));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.fornecedor));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.objeto));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.processo));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.modalidade));
-      linhaPrincipal.appendChild(criarCelulaTexto(contrato.tipo));
-      linhaPrincipal.appendChild(criarCelulaTexto(obterTextoValorTabela(contrato), 'tabela-contratos__valor'));
+      linhaPrincipal.appendChild(criarCelulaTexto(String(contrato.ano), 'tabela-contratos__valor tabela-contratos__coluna-ano', 'Ano'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.numero, 'tabela-contratos__principal tabela-contratos__coluna-numero', 'Nº Contrato'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.fornecedor, 'tabela-contratos__coluna-fornecedor', 'Fornecedor'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.objeto, 'tabela-contratos__coluna-objeto', 'Objeto'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.processo, 'tabela-contratos__coluna-processo', 'Processo'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.modalidade, 'tabela-contratos__coluna-modalidade', 'Modalidade'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.tipo, 'tabela-contratos__coluna-tipo', 'Tipo'));
+      linhaPrincipal.appendChild(criarCelulaTexto(obterTextoValorTabela(contrato), 'tabela-contratos__valor tabela-contratos__coluna-valor', 'Valor'));
 
       vigenciaPrincipal.className = 'tabela-contratos__principal';
       vigenciaPrincipal.textContent = resumoVigencia.principal;
       vigenciaApoio.className = 'tabela-contratos__muted';
       vigenciaApoio.textContent = resumoVigencia.apoio;
+      celulaVigencia.className = 'tabela-contratos__coluna-vigencia';
+      celulaVigencia.setAttribute('data-label', 'Vigência');
       celulaVigencia.appendChild(vigenciaPrincipal);
       celulaVigencia.appendChild(vigenciaApoio);
       linhaPrincipal.appendChild(celulaVigencia);
@@ -3028,6 +3154,8 @@
         }
       }
 
+      celulaSituacao.className = 'tabela-contratos__coluna-situacao';
+      celulaSituacao.setAttribute('data-label', 'Situação');
       linhaPrincipal.appendChild(celulaSituacao);
 
       linhaPrincipal.addEventListener('click', function () {
