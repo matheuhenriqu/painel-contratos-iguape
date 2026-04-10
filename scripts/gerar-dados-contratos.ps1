@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-  [string]$WorkbookPath = 'C:\Users\user\Desktop\CONTROLE DE PRAZOS 2026.xlsx',
+  [string]$WorkbookPath = '',
   [string]$OutputPath = ''
 )
 
@@ -566,10 +566,41 @@ function Convert-WorksheetRowToContract {
   }
 }
 
-$resolvedWorkbookPath = (Resolve-Path -LiteralPath $WorkbookPath).Path
+function Resolve-WorkbookInputPath {
+  param(
+    [AllowNull()]
+    [string]$RequestedPath,
+    [string]$ProjectDirectory
+  )
+
+  if (-not [string]::IsNullOrWhiteSpace($RequestedPath)) {
+    return (Resolve-Path -LiteralPath $RequestedPath).Path
+  }
+
+  $preferredName = 'CONTROLE DE PRAZOS 2026.xlsx'
+  $preferredPath = Join-Path $ProjectDirectory $preferredName
+
+  if (Test-Path -LiteralPath $preferredPath) {
+    return (Resolve-Path -LiteralPath $preferredPath).Path
+  }
+
+  $candidate = Get-ChildItem -LiteralPath $ProjectDirectory -File -Filter '*.xlsx' -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -notlike '~$*' } |
+    Sort-Object Name |
+    Select-Object -First 1
+
+  if ($candidate) {
+    return $candidate.FullName
+  }
+
+  throw 'Nenhuma planilha Excel foi encontrada automaticamente. Informe -WorkbookPath com o caminho do arquivo .xlsx que deve gerar o contratos-data.js.'
+}
+
 $scriptDirectory = Split-Path -Parent $PSCommandPath
+$projectDirectory = Split-Path -Parent $scriptDirectory
+$resolvedWorkbookPath = Resolve-WorkbookInputPath -RequestedPath $WorkbookPath -ProjectDirectory $projectDirectory
 if (-not $OutputPath) {
-  $OutputPath = Join-Path (Split-Path -Parent $scriptDirectory) 'contratos-data.js'
+  $OutputPath = Join-Path $projectDirectory 'contratos-data.js'
 }
 $resolvedOutputPath = [System.IO.Path]::GetFullPath($OutputPath)
 $outputDirectory = Split-Path -Parent $resolvedOutputPath
@@ -643,8 +674,8 @@ try {
 
   [System.IO.File]::WriteAllText($resolvedOutputPath, $output, (New-Object System.Text.UTF8Encoding($false)))
 
-  Write-Output ('Arquivo gerado: ' + $resolvedOutputPath)
-  Write-Output ('Origem: ' + $workbookItem.FullName)
+  Write-Output ('Arquivo gerado: ' + [System.IO.Path]::GetFileName($resolvedOutputPath))
+  Write-Output ('Origem: ' + $workbookItem.Name)
   Write-Output ('Total de registros: ' + $contracts.Count)
   foreach ($pair in $countsByCategory.GetEnumerator()) {
     Write-Output (' - ' + $pair.Key + ': ' + $pair.Value)

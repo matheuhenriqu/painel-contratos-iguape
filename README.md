@@ -2,7 +2,7 @@
 
 Painel estatico para consulta e acompanhamento de contratos administrativos da Prefeitura Municipal de Iguape/SP.
 
-Todos os dados publicados no site sao gerados a partir da planilha `C:\Users\user\Desktop\CONTROLE DE PRAZOS 2026.xlsx`.
+Todos os dados publicados no site sao gerados a partir de uma planilha Excel mantida fora do repositorio.
 
 ## Estrutura
 
@@ -14,10 +14,15 @@ Todos os dados publicados no site sao gerados a partir da planilha `C:\Users\use
 
 ## Atualizar os dados
 
-1. Atualize a planilha `C:\Users\user\Desktop\CONTROLE DE PRAZOS 2026.xlsx`.
-2. Rode:
+1. Atualize a planilha Excel de controle de prazos.
+2. Gere o arquivo de dados com um destes formatos:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\gerar-dados-contratos.ps1 -WorkbookPath "CAMINHO\PARA\CONTROLE DE PRAZOS 2026.xlsx"
+```
+
+```powershell
+# Se a planilha estiver na raiz do projeto, o script localiza automaticamente o primeiro .xlsx valido.
 powershell -ExecutionPolicy Bypass -File .\scripts\gerar-dados-contratos.ps1
 ```
 
@@ -31,7 +36,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\gerar-dados-contratos.ps1
 - Corrige a alternancia entre fornecedor e valor na aba `PREGAO ELETRONICO`.
 - Preserva `status_excel` e `valor_texto` quando o valor original nao e numerico.
 - Deriva `tipo` automaticamente como `Ata` ou `Contrato`.
-- Escreve `window.PAINEL_CONTRATOS_DATA = { ultimaAtualizacao, origemArquivo, contratos }`.
+- Escreve `window.PAINEL_CONTRATOS_DATA = { ultimaAtualizacao, origemArquivo, contratos }`, expondo apenas o nome do arquivo de origem.
 
 ## Publicacao
 
