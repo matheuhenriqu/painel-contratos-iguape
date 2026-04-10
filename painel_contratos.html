@@ -1,0 +1,3869 @@
+<!DOCTYPE html>
+<!--
+  Painel de Contratos - Prefeitura Municipal de Iguape/SP
+  Implementação original em arquivo único, com HTML, CSS e JavaScript puros.
+  Inspirado na linguagem visual de portal público municipal, com funcionamento
+  local por duplo clique e compatibilidade com GitHub Pages.
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Painel de contratos da Prefeitura Municipal de Iguape - SP para consulta pública administrativa, com filtros, indicadores e exportação CSV.">
+  <meta name="theme-color" content="#3a5ea6">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Painel de Contratos - Prefeitura de Iguape">
+  <meta property="og:description" content="Painel institucional de contratos administrativos da Prefeitura Municipal de Iguape - SP.">
+  <meta property="og:type" content="website">
+  <title>Painel de Contratos - Prefeitura Municipal de Iguape/SP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Slab:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233a5ea6'/%3E%3Cpath d='M16 18h32v6H16zm0 11h22v6H16zm0 11h28v6H16z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --primaria: #3a5ea6;
+      --secundaria: #325497;
+      --accent-light: #e9f0f2;
+      --fundo-a: #ffffff;
+      --fundo-b: #f0f2f5;
+      --borda: #dadfe6;
+      --texto: #2a4558;
+      --texto-suave: rgba(80, 86, 89, 0.92);
+      --cabecalho: #ffffff;
+      --cabecalho-topo: #dadfe6;
+      --rodape: #325497;
+      --topbar: #dadfe6;
+      --header-fundo: #f0f2f5;
+      --realce: #2996cc;
+      --sombra: 0 16px 34px rgba(17, 53, 103, 0.08);
+      --sombra-leve: 0 8px 20px rgba(17, 53, 103, 0.06);
+      --raio: 14px;
+      --raio-sm: 10px;
+      --largura-conteudo: 1320px;
+      --foco: #0f7a2a;
+      --offset-nav-sticky: 12px;
+      --offset-secao: 122px;
+    }
+
+    html.dark {
+      --primaria: #79a3ee;
+      --secundaria: #4f79c8;
+      --accent-light: #1d2a3d;
+      --fundo-a: #101827;
+      --fundo-b: #151f30;
+      --borda: #2c3c56;
+      --texto: #edf2f7;
+      --texto-suave: rgba(219, 228, 241, 0.76);
+      --cabecalho: #101827;
+      --cabecalho-topo: #152134;
+      --rodape: #132440;
+      --topbar: #152134;
+      --header-fundo: #101827;
+      --realce: #5aa9e6;
+      --sombra: 0 16px 36px rgba(0, 0, 0, 0.28);
+      --sombra-leve: 0 8px 22px rgba(0, 0, 0, 0.2);
+      --foco: #9fc2ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Roboto', sans-serif;
+      color: var(--texto);
+      background:
+        linear-gradient(180deg, rgba(58, 94, 166, 0.12) 0, transparent 240px),
+        var(--fundo-b);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    .site-header,
+    main,
+    .site-footer {
+      overflow-x: clip;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    a,
+    button,
+    input,
+    select,
+    .painel-card,
+    .area-bloco,
+    .nav-categorias__item,
+    .botao-topo {
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--foco);
+      outline-offset: 3px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -56px;
+      z-index: 300;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--fundo-a);
+      color: var(--texto);
+      border: 1px solid var(--borda);
+      box-shadow: var(--sombra-leve);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    .container-principal {
+      width: min(100%, var(--largura-conteudo));
+      margin: 0 auto;
+      padding-inline: 16px;
+    }
+
+    .site-header {
+      color: var(--texto);
+      background: linear-gradient(180deg, var(--header-fundo), var(--cabecalho));
+      border-bottom: 1px solid color-mix(in srgb, var(--primaria) 22%, var(--borda));
+      box-shadow: 0 1px 0 rgba(17, 53, 103, 0.06);
+      position: relative;
+    }
+
+    .site-header::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--secundaria), var(--primaria), var(--realce));
+    }
+
+    .site-header__topbar {
+      border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, var(--borda));
+      background: var(--topbar);
+    }
+
+    .site-header__topbar-inner {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+    }
+
+    .site-header__inner {
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-block: 16px;
+    }
+
+    .site-header__brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .site-header__selo {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 auto;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--borda);
+      background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--fundo-a) 88%, var(--accent-light)));
+      color: var(--primaria);
+      box-shadow: var(--sombra-leve);
+      font-family: 'Roboto Slab', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .site-header__copy {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .site-header__municipio,
+    .site-header__titulo {
+      margin: 0;
+      font-family: 'Roboto Slab', serif;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .site-header__municipio {
+      font-size: 1.15rem;
+      color: var(--texto);
+    }
+
+    .site-header__titulo {
+      font-size: 1.08rem;
+      text-align: right;
+      color: var(--primaria);
+    }
+
+    .site-header__apoio {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.94rem;
+    }
+
+    .site-header__acoes {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 0 0 auto;
+    }
+
+    .print-timestamp {
+      display: none;
+      margin: 0;
+      padding: 0 16px 16px;
+      color: var(--texto);
+      font-size: 0.92rem;
+    }
+
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+      border: 1px solid color-mix(in srgb, var(--primaria) 28%, var(--borda));
+      border-radius: 999px;
+      background: var(--primaria);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .theme-toggle:hover {
+      background: var(--secundaria);
+    }
+
+    .theme-toggle:focus-visible,
+    .botao-acao:focus-visible,
+    .nav-categorias__item:focus-visible,
+    .tabela-contratos__ordenacao:focus-visible,
+    .botao-topo:focus-visible {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--foco) 28%, transparent);
+    }
+
+    .theme-toggle__icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .botao-acao {
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--primaria);
+      background: var(--primaria);
+      color: #ffffff;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .botao-acao:hover:not(:disabled) {
+      background: var(--secundaria);
+      border-color: var(--secundaria);
+    }
+
+    .botao-acao:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .botao-acao--secundario {
+      background: transparent;
+      color: var(--primaria);
+      box-shadow: none;
+    }
+
+    .botao-acao--secundario:hover:not(:disabled) {
+      color: #ffffff;
+    }
+
+    .botao-acao--compacto {
+      min-height: 38px;
+      padding: 8px 12px;
+      font-size: 0.92rem;
+    }
+
+    main {
+      padding-block: 20px 40px;
+    }
+
+    .update-bar {
+      margin-bottom: 18px;
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      background: color-mix(in srgb, var(--fundo-a) 82%, var(--accent-light));
+      box-shadow: var(--sombra-leve);
+    }
+
+    .update-bar__inner {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+    }
+
+    .update-bar__label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding-inline: 10px;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--primaria);
+      font-size: 0.86rem;
+      font-weight: 500;
+      border: 1px solid color-mix(in srgb, var(--primaria) 18%, var(--borda));
+    }
+
+    .update-bar__text {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.92rem;
+    }
+
+    .status-dados {
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--borda);
+      border-radius: var(--raio-sm);
+      background: var(--fundo-a);
+      color: var(--texto);
+      box-shadow: var(--sombra-leve);
+    }
+
+    .status-dados--erro {
+      border-color: color-mix(in srgb, #b3261e 28%, var(--borda));
+      background: color-mix(in srgb, #fff5f4 82%, var(--fundo-a));
+    }
+
+    html.dark .status-dados--erro {
+      background: color-mix(in srgb, #2b1614 74%, var(--fundo-a));
+    }
+
+    .status-dados--info {
+      border-color: color-mix(in srgb, var(--primaria) 22%, var(--borda));
+      background: color-mix(in srgb, var(--accent-light) 76%, var(--fundo-a));
+    }
+
+    .area-bloco {
+      margin-bottom: 18px;
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      background: var(--fundo-a);
+      box-shadow: var(--sombra-leve);
+      overflow: clip;
+    }
+
+    .area-bloco--suave {
+      background: color-mix(in srgb, var(--fundo-a) 72%, var(--accent-light));
+    }
+
+    .area-bloco__cabecalho {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid color-mix(in srgb, var(--borda) 78%, transparent);
+    }
+
+    .area-bloco__titulo {
+      margin: 0;
+      font-family: 'Roboto Slab', serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .area-bloco__descricao {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.94rem;
+    }
+
+    .area-bloco__conteudo {
+      padding: 18px;
+    }
+
+    .indicadores-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .painel-card {
+      min-height: 118px;
+      padding: 16px;
+      border: 1px solid var(--borda);
+      border-radius: var(--raio-sm);
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 82%, var(--accent-light)), var(--fundo-a));
+      box-shadow: var(--sombra-leve);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .painel-card::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primaria), var(--secundaria));
+    }
+
+    .painel-card__rotulo {
+      margin: 0 0 12px;
+      color: var(--texto-suave);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .painel-card__valor {
+      margin: 0;
+      font-family: 'Roboto Slab', serif;
+      font-size: clamp(1.6rem, 5vw, 2rem);
+      font-weight: 700;
+      color: var(--primaria);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .painel-card__apoio {
+      margin: 10px 0 0;
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+    }
+
+    .painel-card--alerta::before {
+      background: linear-gradient(90deg, #c85d1a, #ef9d4d);
+    }
+
+    .painel-card--urgente::before {
+      background: linear-gradient(90deg, #b3261e, #df5d56);
+    }
+
+    .filtros-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .campo {
+      display: grid;
+      gap: 6px;
+    }
+
+    .campo label {
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .campo select,
+    .campo input {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid var(--borda);
+      padding: 10px 12px;
+      background: var(--fundo-a);
+      color: var(--texto);
+    }
+
+    .campo select:disabled,
+    .campo input:disabled {
+      opacity: 0.72;
+      cursor: not-allowed;
+      background: color-mix(in srgb, var(--fundo-a) 70%, var(--fundo-b));
+    }
+
+    .campo__ajuda {
+      margin: 0;
+      font-size: 0.84rem;
+      color: var(--texto-suave);
+    }
+
+    .nav-categorias {
+      position: sticky;
+      top: var(--offset-nav-sticky);
+      z-index: 90;
+      border: 1px solid color-mix(in srgb, var(--secundaria) 38%, var(--borda));
+      border-radius: var(--raio);
+      background: linear-gradient(180deg, var(--secundaria), var(--primaria));
+      box-shadow: 0 12px 28px rgba(17, 53, 103, 0.16);
+      margin-bottom: 18px;
+    }
+
+    .nav-categorias__lista {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      margin: 0;
+      overflow-x: auto;
+      list-style: none;
+      scrollbar-width: thin;
+    }
+
+    .nav-categorias__item {
+      appearance: none;
+      min-height: 40px;
+      padding: 9px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      white-space: nowrap;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .nav-categorias__item:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.34);
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .nav-categorias__item.is-active {
+      border-color: #ffffff;
+      background: #ffffff;
+      color: var(--primaria);
+      box-shadow: 0 8px 16px rgba(17, 53, 103, 0.16);
+    }
+
+    .nav-categorias__item:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .nav-categorias__contagem {
+      font-variant-numeric: tabular-nums;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .nav-categorias__item.is-active .nav-categorias__contagem {
+      color: var(--texto-suave);
+    }
+
+    .secoes-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .secao-categoria {
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      background: var(--fundo-a);
+      box-shadow: var(--sombra-leve);
+      overflow: clip;
+      scroll-margin-top: var(--offset-secao);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .secao-categoria__cabecalho {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid color-mix(in srgb, var(--borda) 80%, transparent);
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 46%, var(--accent-light)), var(--fundo-a));
+    }
+
+    .secao-categoria__titulo {
+      margin: 0;
+      font-family: 'Roboto Slab', serif;
+      font-size: 1.16rem;
+      color: var(--texto);
+    }
+
+    .secao-categoria__meta {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .secao-categoria__descricao,
+    .secao-categoria__contador,
+    .paginacao-secao__status {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.9rem;
+    }
+
+    .secao-categoria__acoes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .secao-categoria__cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 16px 18px 0;
+    }
+
+    .secao-categoria__card {
+      min-height: 92px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--fundo-a) 84%, var(--accent-light));
+      box-shadow: var(--sombra-leve);
+    }
+
+    .secao-categoria__card--alerta {
+      border-color: color-mix(in srgb, #c85d1a 25%, var(--borda));
+    }
+
+    .secao-categoria__card-rotulo {
+      margin: 0 0 10px;
+      color: var(--texto-suave);
+      font-size: 0.84rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .secao-categoria__card-valor {
+      margin: 0;
+      font-family: 'Roboto Slab', serif;
+      font-size: clamp(1.18rem, 4vw, 1.42rem);
+      font-weight: 700;
+      color: var(--primaria);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .secao-categoria__card-apoio {
+      margin: 8px 0 0;
+      color: var(--texto-suave);
+      font-size: 0.86rem;
+    }
+
+    .secao-categoria__corpo {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .secao-categoria__vazio {
+      border: 1px dashed color-mix(in srgb, var(--primaria) 28%, var(--borda));
+      border-radius: 12px;
+      padding: 16px;
+      background: color-mix(in srgb, var(--fundo-a) 86%, var(--accent-light));
+    }
+
+    .secao-categoria__vazio-texto {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.94rem;
+      text-align: center;
+    }
+
+    .tabela-wrapper {
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      background: var(--fundo-a);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+    }
+
+    .tabela-contratos {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .tabela-contratos caption {
+      text-align: left;
+    }
+
+    .tabela-contratos th,
+    .tabela-contratos td {
+      padding: 12px 10px;
+      border-bottom: 1px solid color-mix(in srgb, var(--borda) 82%, transparent);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .tabela-contratos th {
+      background: color-mix(in srgb, var(--fundo-a) 72%, var(--accent-light));
+      color: var(--texto);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .tabela-contratos tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tabela-contratos__ordenacao {
+      width: 100%;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .tabela-contratos__ordenacao:hover {
+      color: var(--primaria);
+    }
+
+    .tabela-contratos__ordenacao-indicador {
+      color: var(--texto-suave);
+      font-size: 0.84rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tabela-contratos__linha {
+      cursor: pointer;
+    }
+
+    .tabela-contratos__linha:hover,
+    .tabela-contratos__linha:focus-visible {
+      background: color-mix(in srgb, var(--accent-light) 66%, var(--fundo-a));
+    }
+
+    .tabela-contratos__linha:focus-visible {
+      outline: 2px solid var(--foco);
+      outline-offset: -2px;
+    }
+
+    .tabela-contratos__linha.is-expandida {
+      background: color-mix(in srgb, var(--accent-light) 74%, var(--fundo-a));
+    }
+
+    .tabela-contratos__linha td {
+      color: var(--texto);
+    }
+
+    .tabela-contratos__muted {
+      display: block;
+      color: var(--texto-suave);
+      font-size: 0.84rem;
+    }
+
+    .tabela-contratos__principal {
+      font-weight: 500;
+    }
+
+    .tabela-contratos__valor {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .tabela-contratos__detalhe td {
+      padding: 0;
+      background: color-mix(in srgb, var(--accent-light) 48%, var(--fundo-a));
+    }
+
+    .detalhe-contrato {
+      display: grid;
+      gap: 12px;
+      padding: 16px 18px;
+    }
+
+    .detalhe-contrato__linha {
+      display: grid;
+      gap: 4px;
+    }
+
+    .detalhe-contrato__rotulo {
+      color: var(--texto-suave);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .detalhe-contrato__valor {
+      color: var(--texto);
+      font-size: 0.95rem;
+    }
+
+    .badge-situacao {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.82rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-situacao--regular {
+      color: #155724;
+      background: #e8f5e9;
+      border-color: #b7d9bb;
+    }
+
+    .badge-situacao--atencao {
+      color: #7a4f08;
+      background: #fff4db;
+      border-color: #e6c47b;
+    }
+
+    .badge-situacao--urgente {
+      color: #8b1f18;
+      background: #fde7e5;
+      border-color: #e8b2ad;
+    }
+
+    html.dark .badge-situacao--regular {
+      color: #b7efc3;
+      background: #193325;
+      border-color: #2b5a3a;
+    }
+
+    html.dark .badge-situacao--atencao {
+      color: #ffd88a;
+      background: #3a2b12;
+      border-color: #6b4f1d;
+    }
+
+    html.dark .badge-situacao--urgente {
+      color: #ffc0b8;
+      background: #351917;
+      border-color: #69312c;
+    }
+
+    .paginacao-secao {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .paginacao-secao__acoes {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tooltip-contrato {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 240;
+      width: min(340px, calc(100vw - 24px));
+      padding: 12px 14px;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--fundo-a) 94%, var(--accent-light));
+      color: var(--texto);
+      box-shadow: var(--sombra);
+      pointer-events: none;
+    }
+
+    .tooltip-contrato__linha + .tooltip-contrato__linha {
+      margin-top: 10px;
+    }
+
+    .tooltip-contrato__rotulo {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--texto-suave);
+      font-size: 0.76rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tooltip-contrato__texto {
+      display: block;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .secao-sem-vigencia__grupos {
+      display: grid;
+      gap: 18px;
+    }
+
+    .secao-sem-vigencia__grupo {
+      display: grid;
+      gap: 12px;
+    }
+
+    .secao-sem-vigencia__titulo {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Roboto Slab', serif;
+      font-size: 1.08rem;
+      color: var(--texto);
+    }
+
+    .secao-sem-vigencia__icone {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: color-mix(in srgb, var(--accent-light) 74%, var(--fundo-a));
+      border: 1px solid color-mix(in srgb, var(--primaria) 16%, var(--borda));
+      font-size: 1rem;
+      flex: 0 0 auto;
+    }
+
+    .secao-sem-vigencia__meta {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+    }
+
+    .secao-placeholder {
+      border: 1px dashed color-mix(in srgb, var(--primaria) 28%, var(--borda));
+      border-radius: var(--raio-sm);
+      padding: 16px;
+      background: color-mix(in srgb, var(--fundo-a) 85%, var(--accent-light));
+    }
+
+    .secao-placeholder__titulo {
+      margin: 0 0 8px;
+      font-family: 'Roboto Slab', serif;
+      font-size: 1.08rem;
+      color: var(--texto);
+    }
+
+    .secao-placeholder__texto {
+      margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.94rem;
+    }
+
+    .secao-placeholder__meta {
+      margin: 0 0 12px;
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding-inline: 10px;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--primaria);
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: 1px solid color-mix(in srgb, var(--primaria) 18%, var(--borda));
+    }
+
+    .secao-placeholder.is-empty {
+      opacity: 0.88;
+    }
+
+    .secao-placeholder.is-empty .secao-placeholder__meta {
+      color: var(--texto-suave);
+    }
+
+    .site-footer {
+      padding-bottom: 24px;
+    }
+
+    .site-footer__painel {
+      border: 1px solid color-mix(in srgb, var(--rodape) 68%, #ffffff 8%);
+      border-radius: var(--raio);
+      background: linear-gradient(180deg, var(--primaria), var(--rodape));
+      color: #ffffff;
+      box-shadow: var(--sombra);
+    }
+
+    .site-footer__painel::before {
+      content: '';
+      display: block;
+      height: 10px;
+      background: linear-gradient(90deg, var(--realce), var(--primaria));
+    }
+
+    .site-footer__inner {
+      display: grid;
+      gap: 8px;
+      padding: 20px 18px;
+      font-size: 0.95rem;
+    }
+
+    .site-footer__titulo {
+      margin: 0 0 6px;
+      font-family: 'Roboto Slab', serif;
+      font-size: 1.06rem;
+      font-weight: 700;
+    }
+
+    .site-footer__link {
+      color: #ffffff;
+      width: fit-content;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .site-footer__link:hover {
+      color: color-mix(in srgb, #ffffff 82%, var(--realce));
+    }
+
+    .botao-topo {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 50px;
+      height: 50px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--secundaria);
+      color: #ffffff;
+      box-shadow: var(--sombra);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .botao-topo.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .botao-topo:hover {
+      background: var(--primaria);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .container-principal {
+        padding-inline: 24px;
+      }
+
+      .indicadores-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .filtros-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .secao-categoria__cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .detalhe-contrato {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1025px) {
+      .site-header__municipio {
+        font-size: 1.24rem;
+      }
+
+      .site-header__titulo {
+        font-size: 1.18rem;
+      }
+
+      .indicadores-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .filtros-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 767px) {
+      .site-header__inner {
+        align-items: flex-start;
+      }
+
+      .site-header__brand {
+        align-items: flex-start;
+      }
+
+      .site-header__acoes {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .site-header__titulo {
+        text-align: left;
+      }
+
+      .update-bar__text {
+        width: 100%;
+      }
+
+      .secao-categoria__cabecalho {
+        padding-bottom: 14px;
+      }
+
+      .secao-categoria__acoes {
+        width: 100%;
+      }
+
+      .secao-categoria__acoes .botao-acao {
+        width: 100%;
+      }
+
+      .botao-topo {
+        right: 14px;
+        bottom: 14px;
+        width: 46px;
+        height: 46px;
+      }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .tooltip-contrato {
+        display: none !important;
+      }
+    }
+
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      body {
+        overflow: visible !important;
+      }
+
+      * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      .site-header,
+      .area-bloco,
+      .secao-categoria,
+      .tabela-wrapper,
+      .site-footer__painel {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #666666 !important;
+      }
+
+      .site-header__topbar,
+      .site-header::after,
+      .site-header__apoio,
+      .theme-toggle,
+      #bloco-filtros,
+      .nav-categorias,
+      .paginacao-secao,
+      .secao-categoria__acoes,
+      .botao-topo,
+      .tooltip-contrato,
+      .status-dados,
+      .skip-link {
+        display: none !important;
+      }
+
+      .site-footer__painel::before {
+        display: none !important;
+      }
+
+      .site-header {
+        border: 0 !important;
+        margin-bottom: 8mm;
+      }
+
+      .site-header__inner {
+        min-height: auto;
+        padding: 0;
+      }
+
+      .site-header__selo {
+        display: none !important;
+      }
+
+      .site-header__municipio,
+      .site-header__titulo,
+      .area-bloco__titulo,
+      .secao-categoria__titulo,
+      .secao-sem-vigencia__titulo,
+      .site-footer__titulo,
+      .painel-card__valor,
+      .secao-categoria__card-valor {
+        color: #000000 !important;
+      }
+
+      .site-header__acoes {
+        width: auto;
+      }
+
+      .site-header__titulo {
+        text-align: left;
+      }
+
+      .print-timestamp {
+        display: block !important;
+        padding: 6px 0 0;
+        color: #000000 !important;
+      }
+
+      .update-bar,
+      .site-footer {
+        box-shadow: none !important;
+      }
+
+      .indicadores-grid,
+      .secao-categoria__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tabela-wrapper {
+        overflow: visible !important;
+      }
+
+      .tabela-contratos {
+        min-width: 0 !important;
+        width: 100% !important;
+        font-size: 10.5pt;
+      }
+
+      .tabela-contratos__ordenacao {
+        pointer-events: none;
+        color: #000000 !important;
+      }
+
+      .tabela-contratos__ordenacao-indicador,
+      .tabela-contratos__muted,
+      .secao-categoria__descricao,
+      .secao-categoria__contador,
+      .paginacao-secao__status,
+      .site-header__apoio,
+      .area-bloco__descricao,
+      .secao-sem-vigencia__meta {
+        color: #000000 !important;
+      }
+
+      .badge-situacao {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+      }
+
+      .tabela-contratos__detalhe {
+        display: none !important;
+      }
+
+      #secoes-categorias > div,
+      #container-sem-vigencia {
+        break-before: page;
+        page-break-before: always;
+      }
+
+      #secoes-categorias > div:first-child {
+        break-before: auto;
+        page-break-before: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo principal</a>
+
+  <header class="site-header">
+    <div class="site-header__topbar">
+      <div class="container-principal site-header__topbar-inner">
+        <span>Portal Administrativo Municipal</span>
+        <span>Consulta pública e transparência contratual</span>
+      </div>
+    </div>
+    <div class="container-principal site-header__inner">
+      <div class="site-header__brand">
+        <div class="site-header__selo" aria-hidden="true">PMI</div>
+        <div class="site-header__copy">
+          <h1 class="site-header__municipio">Prefeitura Municipal de Iguape — SP</h1>
+          <p class="site-header__apoio">Ambiente institucional preparado para consolidação pública de contratos administrativos</p>
+        </div>
+      </div>
+      <div class="site-header__acoes">
+        <p class="site-header__titulo">Painel de Contratos</p>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Alternar para modo escuro" aria-pressed="false">
+          <span id="theme-toggle-icon" class="theme-toggle__icon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+    </div>
+    <div class="container-principal">
+      <p id="print-timestamp" class="print-timestamp"></p>
+    </div>
+  </header>
+
+  <main id="conteudo-principal" class="container-principal" tabindex="-1">
+    <section class="update-bar" aria-labelledby="titulo-atualizacao">
+      <div class="update-bar__inner">
+        <span id="titulo-atualizacao" class="update-bar__label">Última atualização</span>
+        <p id="ultima-atualizacao-texto" class="update-bar__text">Aguardando publicação dos dados consolidados.</p>
+      </div>
+    </section>
+
+    <div id="mensagem-dados" class="status-dados" role="status" aria-live="polite" hidden></div>
+
+    <section class="area-bloco" aria-labelledby="titulo-indicadores">
+      <div class="area-bloco__cabecalho">
+        <div>
+          <h2 id="titulo-indicadores" class="area-bloco__titulo">Cards globais de indicadores</h2>
+          <p class="area-bloco__descricao">Os indicadores respondem aos filtros globais e consideram os contratos vigentes visíveis.</p>
+        </div>
+        <button id="exportar-tudo" class="botao-acao" type="button">Exportar Tudo (CSV)</button>
+      </div>
+      <div class="area-bloco__conteudo">
+        <div class="indicadores-grid">
+          <article class="painel-card">
+            <p class="painel-card__rotulo">Contratos Vigentes</p>
+            <p id="card-contratos-vigentes" class="painel-card__valor">0</p>
+            <p id="card-contratos-vigentes-apoio" class="painel-card__apoio">Conforme os filtros atuais.</p>
+          </article>
+          <article class="painel-card">
+            <p class="painel-card__rotulo">Valor Total</p>
+            <p id="card-valor-total" class="painel-card__valor">R$ 0,00</p>
+            <p id="card-valor-total-apoio" class="painel-card__apoio">Somatório dos contratos vigentes filtrados.</p>
+          </article>
+          <article class="painel-card painel-card--urgente">
+            <p class="painel-card__rotulo">Vencem em até 30 dias</p>
+            <p id="card-vencem-30" class="painel-card__valor">0</p>
+            <p id="card-vencem-30-apoio" class="painel-card__apoio">Contratos que exigem atenção imediata.</p>
+          </article>
+          <article class="painel-card painel-card--alerta">
+            <p class="painel-card__rotulo">Vencem em 31–90 dias</p>
+            <p id="card-vencem-90" class="painel-card__valor">0</p>
+            <p id="card-vencem-90-apoio" class="painel-card__apoio">Faixa de acompanhamento preventivo.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="bloco-filtros" class="area-bloco area-bloco--suave" aria-labelledby="titulo-filtros">
+      <div class="area-bloco__cabecalho">
+        <div>
+          <h2 id="titulo-filtros" class="area-bloco__titulo">Filtros globais</h2>
+          <p class="area-bloco__descricao">Os filtros funcionam em conjunto com lógica AND e atualizam a URL sem recarregar a página.</p>
+        </div>
+        <button id="limpar-filtros" class="botao-acao botao-acao--secundario" type="button">Limpar filtros</button>
+      </div>
+      <div class="area-bloco__conteudo">
+        <form id="form-filtros" novalidate>
+          <div class="filtros-grid">
+            <div class="campo">
+              <label for="filtro-processo">Processo</label>
+              <select id="filtro-processo">
+                <option>Todos os processos</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-modalidade">Modalidade</label>
+              <select id="filtro-modalidade">
+                <option>Todas as modalidades</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-tipo">Tipo de documento</label>
+              <select id="filtro-tipo">
+                <option>Todos os tipos</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-ano">Ano</label>
+              <select id="filtro-ano">
+                <option>Todos os anos</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-busca">Busca</label>
+              <input id="filtro-busca" type="search" placeholder="Buscar por fornecedor ou objeto" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <p id="resumo-filtros" class="campo__ajuda">Use os filtros para refinar os contratos visíveis. A busca ignora acentos.</p>
+        </form>
+      </div>
+    </section>
+
+    <nav class="nav-categorias" aria-labelledby="titulo-nav-categorias">
+      <div class="sr-only" id="titulo-nav-categorias">Navegação por categorias</div>
+      <ul id="nav-categorias-lista" class="nav-categorias__lista">
+      </ul>
+    </nav>
+
+    <section class="area-bloco" aria-labelledby="titulo-secoes">
+      <div class="area-bloco__cabecalho">
+        <div>
+          <h2 id="titulo-secoes" class="area-bloco__titulo">Seções por categoria</h2>
+          <p class="area-bloco__descricao">Cada categoria apresenta indicadores, tabela detalhada, ordenação, paginação e exportação conforme os filtros globais.</p>
+        </div>
+      </div>
+      <div class="area-bloco__conteudo">
+        <div id="secoes-categorias" class="secoes-grid" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="area-bloco area-bloco--suave" aria-labelledby="titulo-sem-vigencia">
+      <div class="area-bloco__cabecalho">
+        <div>
+          <h2 id="titulo-sem-vigencia" class="area-bloco__titulo">Contratos sem vigência informada</h2>
+          <p class="area-bloco__descricao">Seção separada preparada para contratos que exigem destaque e validação complementar.</p>
+        </div>
+      </div>
+      <div class="area-bloco__conteudo">
+        <div id="container-sem-vigencia" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-principal">
+      <div class="site-footer__painel">
+        <div class="site-footer__inner">
+          <p class="site-footer__titulo">Prefeitura Municipal de Iguape — SP</p>
+          <div>Av. Adhemar de Barros, 1070 — CEP 11920-000</div>
+          <div>Telefone: (13) 3848-6810</div>
+          <div>Horário: 08h às 11h30 — 13h às 17h30</div>
+          <div>Prefeito: Salvador José Barbosa Júnior</div>
+          <div>Vice-Prefeita: Egina Yamamoto Spinula</div>
+          <a class="site-footer__link" href="https://github.com/" target="_blank" rel="noopener noreferrer">⌨ Código-fonte disponível no GitHub</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button id="botao-topo" class="botao-topo" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <div id="tooltip-contrato" class="tooltip-contrato" role="tooltip" hidden></div>
+
+  <script src="contratos-data.js"></script>
+  <script>
+    const PAYLOAD_DADOS_INICIAIS = (function () {
+      const payload = window.PAINEL_CONTRATOS_DATA;
+      if (!payload || typeof payload !== 'object') {
+        return {
+          contratos: [],
+          ultimaAtualizacao: '',
+          origemArquivo: '',
+          erro: 'Nenhum conjunto de contratos foi carregado. Verifique o arquivo contratos-data.js.',
+          avisos: []
+        };
+      }
+
+      const contratos = Array.isArray(payload.contratos) ? payload.contratos : [];
+      return {
+        contratos: contratos,
+        ultimaAtualizacao: typeof payload.ultimaAtualizacao === 'string' ? payload.ultimaAtualizacao : '',
+        origemArquivo: typeof payload.origemArquivo === 'string' ? payload.origemArquivo : '',
+        erro: Array.isArray(payload.contratos) ? '' : 'O payload de contratos foi carregado, mas não possui uma lista válida em contratos-data.js.',
+        avisos: []
+      };
+    })();
+
+    const ULTIMA_ATUALIZACAO = PAYLOAD_DADOS_INICIAIS.ultimaAtualizacao || '';
+    const CATEGORIAS_VALIDAS = ['PREGÃO ELETRÔNICO', 'PRORROGAÇÃO', 'LOCAÇÃO', 'CONCORRÊNCIA ELETRÔNICA', 'CHAMADA PÚBLICA', 'TOMADA DE PREÇOS', 'CONCORRÊNCIA PRESENCIAL', 'DISPENSA'];
+    const PROCESSOS_FIXOS = [];
+    const STORAGE_THEME_KEY = 'tema';
+    const CATEGORIA_FALLBACK = 'Outros';
+    const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR');
+    const FORMATADOR_DATA_HORA = new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const FORMATADOR_MOEDA = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+    const QUERY_PARAM_MAP = {
+      processo: 'processo',
+      modalidade: 'modalidade',
+      tipo: 'tipo',
+      ano: 'ano',
+      busca: 'busca'
+    };
+    const ORDENACAO_COLUNAS = [
+      { chave: 'ano', rotulo: 'Ano' },
+      { chave: 'numero', rotulo: 'Nº Contrato' },
+      { chave: 'fornecedor', rotulo: 'Fornecedor' },
+      { chave: 'objeto', rotulo: 'Objeto' },
+      { chave: 'processo', rotulo: 'Processo' },
+      { chave: 'modalidade', rotulo: 'Modalidade' },
+      { chave: 'tipo', rotulo: 'Tipo' },
+      { chave: 'valor', rotulo: 'Valor (R$)' },
+      { chave: 'fim_vigencia', rotulo: 'Vigência' },
+      { chave: 'situacao', rotulo: 'Situação' }
+    ];
+
+    const DOM = {
+      html: document.documentElement,
+      themeMeta: document.querySelector('meta[name="theme-color"]'),
+      themeToggle: document.getElementById('theme-toggle'),
+      themeToggleIcon: document.getElementById('theme-toggle-icon'),
+      ultimaAtualizacaoTexto: document.getElementById('ultima-atualizacao-texto'),
+      mensagemDados: document.getElementById('mensagem-dados'),
+      exportarTudo: document.getElementById('exportar-tudo'),
+      limparFiltros: document.getElementById('limpar-filtros'),
+      formFiltros: document.getElementById('form-filtros'),
+      resumoFiltros: document.getElementById('resumo-filtros'),
+      printTimestamp: document.getElementById('print-timestamp'),
+      botaoTopo: document.getElementById('botao-topo'),
+      tooltipContrato: document.getElementById('tooltip-contrato'),
+      navCategorias: document.querySelector('.nav-categorias'),
+      navCategoriasLista: document.getElementById('nav-categorias-lista'),
+      secoesCategorias: document.getElementById('secoes-categorias'),
+      containerSemVigencia: document.getElementById('container-sem-vigencia'),
+      cards: {
+        contratosVigentes: document.getElementById('card-contratos-vigentes'),
+        contratosVigentesApoio: document.getElementById('card-contratos-vigentes-apoio'),
+        valorTotal: document.getElementById('card-valor-total'),
+        valorTotalApoio: document.getElementById('card-valor-total-apoio'),
+        vencem30: document.getElementById('card-vencem-30'),
+        vencem30Apoio: document.getElementById('card-vencem-30-apoio'),
+        vencem90: document.getElementById('card-vencem-90'),
+        vencem90Apoio: document.getElementById('card-vencem-90-apoio')
+      },
+      filtros: {
+        processo: document.getElementById('filtro-processo'),
+        modalidade: document.getElementById('filtro-modalidade'),
+        tipo: document.getElementById('filtro-tipo'),
+        ano: document.getElementById('filtro-ano'),
+        busca: document.getElementById('filtro-busca')
+      }
+    };
+
+    const appState = {
+      contratos: [],
+      erroDados: '',
+      avisos: [],
+      filtros: {
+        processo: '',
+        modalidade: '',
+        tipo: '',
+        ano: '',
+        busca: ''
+      },
+      contratosFiltrados: [],
+      contratosVigentesFiltrados: [],
+      contratosSemVigenciaFiltrados: [],
+      contratosAgrupadosPorCategoria: {},
+      contagensPorCategoria: {},
+      categoriaAtiva: '',
+      observadorCategorias: null,
+      tooltipRaf: 0,
+      renderRaf: 0,
+      modoImpressao: false,
+      snapshotImpressao: null,
+      futuros: {
+        secoes: {}
+      }
+    };
+
+    // Normaliza entradas textuais para busca, slug e comparações sem acento.
+    function normalizarTexto(valor) {
+      return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
+    // Converte a categoria em um identificador estável para uso em IDs e chaves.
+    function slugifyCategoria(categoria) {
+      return normalizarTexto(categoria)
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    // Faz o escape mínimo para exportações CSV com ; como separador.
+    function escaparCSV(valor) {
+      const texto = String(valor === null || valor === undefined ? '' : valor);
+      return /[;"\n\r]/.test(texto) ? '"' + texto.replace(/"/g, '""') + '"' : texto;
+    }
+
+    // Lê datas ISO locais no formato YYYY-MM-DD e devolve Date ou string vazia.
+    function parseDataISO(valor) {
+      if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+        const copia = new Date(valor.getTime());
+        copia.setHours(0, 0, 0, 0);
+        return copia;
+      }
+
+      const texto = String(valor || '').trim();
+      if (!texto) {
+        return '';
+      }
+
+      const partes = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!partes) {
+        return '';
+      }
+
+      const ano = Number(partes[1]);
+      const mes = Number(partes[2]) - 1;
+      const dia = Number(partes[3]);
+      const data = new Date(ano, mes, dia);
+      data.setHours(0, 0, 0, 0);
+
+      if (
+        Number.isNaN(data.getTime()) ||
+        data.getFullYear() !== ano ||
+        data.getMonth() !== mes ||
+        data.getDate() !== dia
+      ) {
+        return '';
+      }
+
+      return data;
+    }
+
+    // Formata datas para o padrão brasileiro de forma tolerante a entradas vazias.
+    function formatarDataBR(valor) {
+      const data = parseDataISO(valor);
+      return data ? FORMATADOR_DATA.format(data) : '';
+    }
+
+    // Formata valores monetários em BRL com fallback seguro para zero.
+    function formatarMoedaBR(valor) {
+      return FORMATADOR_MOEDA.format(Number(valor) || 0);
+    }
+
+    // Converte números até a casa dos milhões para português por extenso.
+    function numeroAte999PorExtenso(numero) {
+      const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+      const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+      const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+      const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+
+      if (numero === 0) {
+        return '';
+      }
+
+      if (numero === 100) {
+        return 'cem';
+      }
+
+      const partes = [];
+      const valorCentenas = Math.floor(numero / 100);
+      const resto = numero % 100;
+
+      if (valorCentenas > 0) {
+        partes.push(centenas[valorCentenas]);
+      }
+
+      if (resto > 0) {
+        if (resto < 10) {
+          partes.push(unidades[resto]);
+        } else if (resto < 20) {
+          partes.push(especiais[resto - 10]);
+        } else {
+          const valorDezenas = Math.floor(resto / 10);
+          const valorUnidades = resto % 10;
+          partes.push(dezenas[valorDezenas] + (valorUnidades ? ' e ' + unidades[valorUnidades] : ''));
+        }
+      }
+
+      return partes.join(' e ');
+    }
+
+    // Monta o inteiro por extenso para suporte a valores de contratos em reais.
+    function numeroInteiroPorExtenso(numero) {
+      if (numero === 0) {
+        return 'zero';
+      }
+
+      const partes = [];
+      const milhoes = Math.floor(numero / 1000000);
+      const restoMilhoes = numero % 1000000;
+      const milhares = Math.floor(restoMilhoes / 1000);
+      const resto = restoMilhoes % 1000;
+
+      if (milhoes > 0) {
+        partes.push((milhoes === 1 ? 'um' : numeroInteiroPorExtenso(milhoes)) + ' ' + (milhoes === 1 ? 'milhão' : 'milhões'));
+      }
+
+      if (milhares > 0) {
+        partes.push(milhares === 1 ? 'mil' : numeroAte999PorExtenso(milhares) + ' mil');
+      }
+
+      if (resto > 0) {
+        partes.push(numeroAte999PorExtenso(resto));
+      }
+
+      return partes.join(partes.length > 1 ? ', ' : '');
+    }
+
+    // Formata valores monetários por extenso para uso futuro em detalhes e tooltips.
+    function formatarValorPorExtenso(valor) {
+      const valorSeguro = Number(valor) || 0;
+      const inteiro = Math.floor(valorSeguro);
+      const centavos = Math.round((valorSeguro - inteiro) * 100);
+      const partes = [];
+
+      partes.push(numeroInteiroPorExtenso(inteiro) + ' ' + (inteiro === 1 ? 'real' : 'reais'));
+
+      if (centavos > 0) {
+        partes.push(numeroInteiroPorExtenso(centavos) + ' ' + (centavos === 1 ? 'centavo' : 'centavos'));
+      }
+
+      const texto = partes.join(' e ');
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
+    }
+
+    // Usa a data de atualização como referência estável para classificar o conjunto de exemplo.
+    function obterDataReferenciaPainel() {
+      const data = new Date(ULTIMA_ATUALIZACAO);
+      if (Number.isNaN(data.getTime())) {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        return hoje;
+      }
+
+      data.setHours(0, 0, 0, 0);
+      return data;
+    }
+
+    // Calcula quantos dias faltam até o fim da vigência; retorna null sem data válida.
+    function calcularDiasRestantes(contratoOuData, dataReferencia) {
+      const referencia = dataReferencia instanceof Date ? new Date(dataReferencia.getTime()) : obterDataReferenciaPainel();
+      referencia.setHours(0, 0, 0, 0);
+
+      let fimVigencia = '';
+
+      if (contratoOuData instanceof Date || typeof contratoOuData === 'string') {
+        fimVigencia = parseDataISO(contratoOuData);
+      } else if (contratoOuData && typeof contratoOuData === 'object') {
+        fimVigencia = contratoOuData.fim_vigencia_obj || parseDataISO(contratoOuData.fim_vigencia);
+      }
+
+      if (!fimVigencia) {
+        return null;
+      }
+
+      return Math.round((fimVigencia.getTime() - referencia.getTime()) / 86400000);
+    }
+
+    // Traduz a vigência de um contrato para um estado semântico reutilizável.
+    function obterSituacaoContrato(contrato, dataReferencia) {
+      const diasRestantes = calcularDiasRestantes(contrato, dataReferencia);
+
+      if (diasRestantes === null) {
+        return { chave: 'sem_vigencia', rotulo: 'Sem vigência informada', diasRestantes: null };
+      }
+
+      if (diasRestantes < 0) {
+        return { chave: 'encerrado', rotulo: 'Encerrado', diasRestantes: diasRestantes };
+      }
+
+      if (diasRestantes <= 30) {
+        return { chave: 'urgente', rotulo: 'Vence em até 30 dias', diasRestantes: diasRestantes };
+      }
+
+      if (diasRestantes <= 90) {
+        return { chave: 'atencao', rotulo: 'Vence entre 31 e 90 dias', diasRestantes: diasRestantes };
+      }
+
+      return { chave: 'regular', rotulo: 'Vigente regular', diasRestantes: diasRestantes };
+    }
+
+    // Faz o parse resiliente de valores monetários vindos como string ou número.
+    function parsearValor(valor) {
+      if (typeof valor === 'number' && Number.isFinite(valor)) {
+        return valor;
+      }
+
+      const texto = String(valor || '').trim();
+      if (!texto) {
+        return null;
+      }
+
+      const normalizado = texto
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .replace(/[^\d.-]/g, '');
+
+      const numero = Number(normalizado);
+      return Number.isFinite(numero) ? numero : null;
+    }
+
+    // Tenta extrair o ano a partir do número do contrato quando o campo ano vier malformado.
+    function extrairAnoDoNumero(numero) {
+      const texto = String(numero || '').trim();
+      const correspondencia = texto.match(/(19|20)\d{2}/);
+      return correspondencia ? Number(correspondencia[0]) : '';
+    }
+
+    // Retorna a fonte de contratos sem lançar erro caso a constante seja removida no futuro.
+    function obterFonteContratosSegura() {
+      if (PAYLOAD_DADOS_INICIAIS.erro) {
+        return {
+          contratos: [],
+          erro: PAYLOAD_DADOS_INICIAIS.erro,
+          avisos: []
+        };
+      }
+
+      return {
+        contratos: Array.isArray(PAYLOAD_DADOS_INICIAIS.contratos) ? PAYLOAD_DADOS_INICIAIS.contratos : [],
+        erro: '',
+        avisos: []
+      };
+    }
+
+    // Valida e saneia os contratos sem interromper a execução da página.
+    function validarContratos(entrada) {
+      if (!Array.isArray(entrada)) {
+        return {
+          contratos: [],
+          erro: 'Nenhum conjunto de contratos foi carregado. Verifique o arquivo contratos-data.js.',
+          avisos: []
+        };
+      }
+
+      const avisos = [];
+      const contratosValidos = [];
+      const referencia = obterDataReferenciaPainel();
+
+      entrada.forEach(function (item, indice) {
+        if (!item || typeof item !== 'object') {
+          const mensagemItemInvalido = 'Contrato ignorado: item inválido na posição ' + indice + '.';
+          avisos.push(mensagemItemInvalido);
+          console.warn(mensagemItemInvalido, item);
+          return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(item, 'categoria') || !String(item.categoria || '').trim()) {
+          const mensagemCategoriaAusente = 'Contrato ignorado: campo "categoria" ausente ou vazio.';
+          avisos.push(mensagemCategoriaAusente);
+          console.warn(mensagemCategoriaAusente, item);
+          return;
+        }
+
+        const categoriaOriginal = String(item.categoria).trim();
+        let categoria = categoriaOriginal;
+        if (!CATEGORIAS_VALIDAS.includes(categoriaOriginal)) {
+          categoria = CATEGORIA_FALLBACK;
+          const mensagemCategoriaInvalida = 'Contrato com categoria inválida movido para "Outros".';
+          avisos.push(mensagemCategoriaInvalida);
+          console.warn(mensagemCategoriaInvalida, item);
+        }
+
+        let valor = parsearValor(item.valor);
+        if (valor === null) {
+          valor = 0;
+          const mensagemValorInvalido = 'Contrato com valor inválido convertido para 0.';
+          avisos.push(mensagemValorInvalido);
+          console.warn(mensagemValorInvalido, item);
+        }
+
+        let ano = Number(item.ano);
+        if (!Number.isFinite(ano)) {
+          ano = extrairAnoDoNumero(item.numero);
+        }
+        if (!Number.isFinite(ano)) {
+          ano = '';
+        }
+
+        const dataInicio = parseDataISO(item.inicio_vigencia);
+        const dataFim = parseDataISO(item.fim_vigencia);
+
+        if (String(item.inicio_vigencia || '').trim() && !dataInicio) {
+          const mensagemInicioInvalido = 'Contrato com data inválida em "inicio_vigencia" tratado como vazio.';
+          avisos.push(mensagemInicioInvalido);
+          console.warn(mensagemInicioInvalido, item);
+        }
+
+        if (String(item.fim_vigencia || '').trim() && !dataFim) {
+          const mensagemFimInvalido = 'Contrato com data inválida em "fim_vigencia" tratado como vazio.';
+          avisos.push(mensagemFimInvalido);
+          console.warn(mensagemFimInvalido, item);
+        }
+
+        const contratoSaneado = {
+          id: 'contrato-' + indice + '-' + slugifyCategoria(categoria || 'sem-categoria') + '-' + normalizarTexto(item.numero || 'sem-numero'),
+          ano: ano,
+          numero: String(item.numero || '').trim(),
+          fornecedor: String(item.fornecedor || '').trim(),
+          objeto: String(item.objeto || '').trim(),
+          processo: String(item.processo || '').trim(),
+          categoria: categoria,
+          categoria_original: categoriaOriginal,
+          modalidade: String(item.modalidade || '').trim(),
+          tipo: String(item.tipo || '').trim(),
+          valor: valor,
+          valor_texto: String(item.valor_texto || '').trim(),
+          valor_formatado: formatarMoedaBR(valor),
+          valor_por_extenso: formatarValorPorExtenso(valor),
+          inicio_vigencia: dataInicio ? String(item.inicio_vigencia).trim() : '',
+          fim_vigencia: dataFim ? String(item.fim_vigencia).trim() : '',
+          inicio_vigencia_obj: dataInicio,
+          fim_vigencia_obj: dataFim,
+          status_excel: String(item.status_excel || '').trim(),
+          observacoes: String(item.observacoes || '').trim(),
+          gestor_fiscal: String(item.gestor_fiscal || '').trim()
+        };
+
+        contratoSaneado.dias_restantes = calcularDiasRestantes(contratoSaneado, referencia);
+        contratoSaneado.situacao = obterSituacaoContrato(contratoSaneado, referencia);
+
+        contratosValidos.push(contratoSaneado);
+      });
+
+      return {
+        contratos: contratosValidos,
+        erro: contratosValidos.length ? '' : 'Nenhum contrato válido foi encontrado após a validação dos dados.',
+        avisos: avisos
+      };
+    }
+
+    // Exibe a barra de atualização a partir do carimbo de data/hora configurado.
+    function atualizarBarraUltimaAtualizacao() {
+      const data = new Date(ULTIMA_ATUALIZACAO);
+
+      if (Number.isNaN(data.getTime())) {
+        DOM.ultimaAtualizacaoTexto.textContent = 'Data de atualização não informada.';
+        return;
+      }
+
+      DOM.ultimaAtualizacaoTexto.textContent = 'Atualizado em ' + FORMATADOR_DATA_HORA.format(data);
+    }
+
+    // Mostra mensagens amigáveis para situações de dados ausentes ou malformados.
+    function mostrarMensagemDados(texto, tipo) {
+      if (!texto) {
+        DOM.mensagemDados.hidden = true;
+        DOM.mensagemDados.textContent = '';
+        DOM.mensagemDados.className = 'status-dados';
+        return;
+      }
+
+      DOM.mensagemDados.hidden = false;
+      DOM.mensagemDados.textContent = texto;
+      DOM.mensagemDados.className = 'status-dados status-dados--' + tipo;
+    }
+
+    // Define o estado padrão das seções paginadas e ordenáveis.
+    function criarEstadoFuturoSecao() {
+      return {
+        pagina: 1,
+        ordenacao: '',
+        direcao: 'asc',
+        expandido: ''
+      };
+    }
+
+    // Reinicia o estado das seções sempre que os filtros globais mudarem.
+    function resetarEstadosFuturos() {
+      const secoes = {};
+
+      CATEGORIAS_VALIDAS.concat(CATEGORIA_FALLBACK, 'sem-vigencia').forEach(function (categoria) {
+        secoes[categoria] = criarEstadoFuturoSecao();
+      });
+
+      appState.futuros.secoes = secoes;
+    }
+
+    // Garante que cada categoria possua um estado de interface independente e reutilizável.
+    function obterEstadoSecao(categoria) {
+      if (!appState.futuros.secoes[categoria]) {
+        appState.futuros.secoes[categoria] = criarEstadoFuturoSecao();
+      }
+
+      return appState.futuros.secoes[categoria];
+    }
+
+    // Preenche selects preservando a primeira opção como estado vazio.
+    function popularSelect(elemento, valores, rotuloPadrao) {
+      elemento.replaceChildren();
+
+      const opcaoInicial = document.createElement('option');
+      opcaoInicial.value = '';
+      opcaoInicial.textContent = rotuloPadrao;
+      elemento.appendChild(opcaoInicial);
+
+      valores.forEach(function (valor) {
+        const opcao = document.createElement('option');
+        opcao.value = valor;
+        opcao.textContent = valor;
+        elemento.appendChild(opcao);
+      });
+    }
+
+    // Coleta processos presentes preservando uma ordem fixa, com extras no final.
+    function obterProcessosDisponiveis(contratos) {
+      const presentes = new Set(
+        contratos
+          .map(function (contrato) { return contrato.processo; })
+          .filter(Boolean)
+      );
+
+      const oficiaisPresentes = PROCESSOS_FIXOS.filter(function (nome) {
+        return presentes.has(nome);
+      });
+
+      const extras = Array.from(presentes).filter(function (nome) {
+        return !PROCESSOS_FIXOS.includes(nome);
+      }).sort(function (a, b) {
+        return a.localeCompare(b, 'pt-BR');
+      });
+
+      return oficiaisPresentes.concat(extras);
+    }
+
+    // Alimenta os filtros globais com base nos contratos validados.
+    function popularFiltrosGlobais(contratos) {
+      const processos = obterProcessosDisponiveis(contratos);
+      const modalidades = Array.from(new Set(
+        contratos
+          .map(function (contrato) { return contrato.modalidade; })
+          .filter(Boolean)
+      )).sort(function (a, b) {
+        return a.localeCompare(b, 'pt-BR');
+      });
+      const tipos = Array.from(new Set(
+        contratos
+          .map(function (contrato) { return contrato.tipo; })
+          .filter(Boolean)
+      )).sort(function (a, b) {
+        return a.localeCompare(b, 'pt-BR');
+      });
+      const anos = Array.from(new Set(
+        contratos
+          .map(function (contrato) { return contrato.ano; })
+          .filter(function (ano) { return ano !== ''; })
+      )).sort(function (a, b) {
+        return b - a;
+      }).map(String);
+
+      popularSelect(DOM.filtros.processo, processos, 'Todos os processos');
+      popularSelect(DOM.filtros.modalidade, modalidades, 'Todas as modalidades');
+      popularSelect(DOM.filtros.tipo, tipos, 'Todos os tipos');
+      popularSelect(DOM.filtros.ano, anos, 'Todos os anos');
+    }
+
+    // Lê o estado atual dos filtros a partir dos controles do formulário.
+    function obterFiltrosDoDOM() {
+      return {
+        processo: DOM.filtros.processo.value,
+        modalidade: DOM.filtros.modalidade.value,
+        tipo: DOM.filtros.tipo.value,
+        ano: DOM.filtros.ano.value,
+        busca: DOM.filtros.busca.value.trim()
+      };
+    }
+
+    // Aplica um conjunto de filtros ao DOM após leitura da URL.
+    function aplicarFiltrosNoDOM(filtros) {
+      DOM.filtros.processo.value = filtros.processo || '';
+      DOM.filtros.modalidade.value = filtros.modalidade || '';
+      DOM.filtros.tipo.value = filtros.tipo || '';
+      DOM.filtros.ano.value = filtros.ano || '';
+      DOM.filtros.busca.value = filtros.busca || '';
+    }
+
+    // Tenta recuperar filtros do endereço e aplica apenas valores válidos.
+    function aplicarFiltrosDaURL() {
+      const params = new URLSearchParams(window.location.search);
+      const filtros = {
+        processo: params.get(QUERY_PARAM_MAP.processo) || '',
+        modalidade: params.get(QUERY_PARAM_MAP.modalidade) || '',
+        tipo: params.get(QUERY_PARAM_MAP.tipo) || '',
+        ano: params.get(QUERY_PARAM_MAP.ano) || '',
+        busca: params.get(QUERY_PARAM_MAP.busca) || ''
+      };
+
+      ['processo', 'modalidade', 'tipo', 'ano'].forEach(function (campo) {
+        const elemento = DOM.filtros[campo];
+        const valor = filtros[campo];
+        if (!valor) {
+          return;
+        }
+
+        const existe = Array.from(elemento.options).some(function (opcao) {
+          return opcao.value === valor;
+        });
+
+        if (!existe) {
+          filtros[campo] = '';
+        }
+      });
+
+      aplicarFiltrosNoDOM(filtros);
+    }
+
+    // Sincroniza os filtros com a URL sem recarregar a página.
+    function sincronizarFiltrosNaURL(filtros) {
+      const params = new URLSearchParams();
+
+      Object.keys(QUERY_PARAM_MAP).forEach(function (chave) {
+        const valor = filtros[chave];
+        if (valor) {
+          params.set(QUERY_PARAM_MAP[chave], valor);
+        }
+      });
+
+      const query = params.toString();
+      const destino = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+
+      try {
+        window.history.replaceState(null, '', destino);
+      } catch (erro) {
+        return;
+      }
+    }
+
+    // Limpa todos os filtros e remove parâmetros da URL.
+    function limparFiltrosGlobais() {
+      aplicarFiltrosNoDOM({
+        processo: '',
+        modalidade: '',
+        tipo: '',
+        ano: '',
+        busca: ''
+      });
+
+      processarAlteracaoFiltros();
+    }
+
+    // Debounce simples para evitar re-render em cada tecla digitada na busca.
+    function debounce(funcao, espera) {
+      let timeout = 0;
+
+      return function () {
+        const contexto = this;
+        const argumentos = arguments;
+
+        window.clearTimeout(timeout);
+        timeout = window.setTimeout(function () {
+          funcao.apply(contexto, argumentos);
+        }, espera);
+      };
+    }
+
+    // Verifica se um contrato atende a todos os filtros globais simultaneamente.
+    function contratoAtendeFiltros(contrato, filtros) {
+      const buscaNormalizada = normalizarTexto(filtros.busca);
+      const atendeBusca = !buscaNormalizada || [
+        contrato.fornecedor,
+        contrato.objeto
+      ].some(function (campo) {
+        return normalizarTexto(campo).includes(buscaNormalizada);
+      });
+
+      return (
+        (!filtros.processo || contrato.processo === filtros.processo) &&
+        (!filtros.modalidade || contrato.modalidade === filtros.modalidade) &&
+        (!filtros.tipo || contrato.tipo === filtros.tipo) &&
+        (!filtros.ano || String(contrato.ano) === String(filtros.ano)) &&
+        atendeBusca
+      );
+    }
+
+    function obterRotuloValorContrato(contrato) {
+      return contrato && contrato.valor_texto ? 'Valor informado' : 'Valor por extenso';
+    }
+
+    function obterTextoValorContrato(contrato) {
+      if (contrato && contrato.valor_texto) {
+        return contrato.valor_texto;
+      }
+
+      return formatarValorPorExtenso(contrato && contrato.valor);
+    }
+
+    function obterTextoValorTabela(contrato) {
+      if (contrato && contrato.valor_texto) {
+        return contrato.valor_texto;
+      }
+
+      return formatarMoedaBR(contrato && contrato.valor);
+    }
+
+    // Aplica a filtragem global ao conjunto validado de contratos.
+    function filtrarContratos(contratos, filtros) {
+      return contratos.filter(function (contrato) {
+        return contratoAtendeFiltros(contrato, filtros);
+      });
+    }
+
+    // Agrupa contratos por categoria para alimentar contagens e seções renderizadas.
+    function agruparPorCategoria(contratos) {
+      const agrupado = {};
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        agrupado[categoria] = [];
+      });
+
+      contratos.forEach(function (contrato) {
+        const categoria = CATEGORIAS_VALIDAS.includes(contrato.categoria) ? contrato.categoria : CATEGORIA_FALLBACK;
+        if (!agrupado[categoria]) {
+          agrupado[categoria] = [];
+        }
+        agrupado[categoria].push(contrato);
+      });
+
+      return agrupado;
+    }
+
+    // Resume o volume visível por categoria com base apenas nos contratos vigentes.
+    function calcularContagensPorCategoria(agrupado) {
+      const contagens = {};
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        contagens[categoria] = (agrupado[categoria] || []).length;
+      });
+
+      return contagens;
+    }
+
+    // Atualiza os quatro cards principais com base no recorte filtrado vigente.
+    function renderizarCardsGlobais(contratosVigentes) {
+      const totalVigentes = contratosVigentes.length;
+      const valorTotal = contratosVigentes.reduce(function (acumulado, contrato) {
+        return acumulado + (Number(contrato.valor) || 0);
+      }, 0);
+      const vencem30 = contratosVigentes.filter(function (contrato) {
+        return contrato.situacao.chave === 'urgente';
+      }).length;
+      const vencem90 = contratosVigentes.filter(function (contrato) {
+        return contrato.situacao.chave === 'atencao';
+      }).length;
+
+      DOM.cards.contratosVigentes.textContent = String(totalVigentes);
+      DOM.cards.contratosVigentesApoio.textContent = totalVigentes === 1 ? '1 contrato vigente visível.' : totalVigentes + ' contratos vigentes visíveis.';
+      DOM.cards.valorTotal.textContent = formatarMoedaBR(valorTotal);
+      DOM.cards.valorTotalApoio.textContent = 'Somatório dos contratos vigentes filtrados.';
+      DOM.cards.vencem30.textContent = String(vencem30);
+      DOM.cards.vencem30Apoio.textContent = vencem30 === 1 ? '1 contrato vence em até 30 dias.' : vencem30 + ' contratos vencem em até 30 dias.';
+      DOM.cards.vencem90.textContent = String(vencem90);
+      DOM.cards.vencem90Apoio.textContent = vencem90 === 1 ? '1 contrato vence entre 31 e 90 dias.' : vencem90 + ' contratos vencem entre 31 e 90 dias.';
+    }
+
+    // Atualiza o texto de apoio dos filtros com o recorte atualmente visível.
+    function renderizarResumoFiltros(contratosFiltrados, contratosVigentes, contratosSemVigencia) {
+      const contratosEncerrados = contratosFiltrados.filter(function (contrato) {
+        return contrato.situacao.chave === 'encerrado';
+      }).length;
+
+      DOM.resumoFiltros.textContent =
+        'Filtros combinados com lógica AND. ' +
+        contratosVigentes.length + ' vigentes, ' +
+        contratosSemVigencia.length + ' sem vigência informada e ' +
+        contratosEncerrados + ' encerrados no recorte atual.';
+    }
+
+    // Ajusta textos rápidos entre singular e plural para manter a interface natural.
+    function formatarQuantidade(quantidade, singular, plural) {
+      return quantidade + ' ' + (quantidade === 1 ? singular : plural);
+    }
+
+    // Gera IDs consistentes para containers, seções e tabelas vinculadas à categoria.
+    function obterIdContainerSecao(categoria) {
+      return 'container-secao-' + slugifyCategoria(categoria);
+    }
+
+    function obterIdSecao(categoria) {
+      return 'secao-' + slugifyCategoria(categoria);
+    }
+
+    function obterIdTabelaSecao(categoria) {
+      return 'tabela-' + slugifyCategoria(categoria);
+    }
+
+    // Cria uma chave única e estável para cada contrato renderizado na interface.
+    function obterIdentificadorContrato(contrato) {
+      if (contrato && contrato.id) {
+        return normalizarTexto(String(contrato.id)).replace(/[^a-z0-9]+/g, '-');
+      }
+
+      return [
+        slugifyCategoria(contrato.categoria || ''),
+        String(contrato.ano || ''),
+        normalizarTexto(contrato.numero).replace(/[^a-z0-9]+/g, '-')
+      ].join('-');
+    }
+
+    // Cria uma legenda oculta para contextualizar tabelas em leitores de tela.
+    function criarCaptionTabela(texto) {
+      const caption = document.createElement('caption');
+
+      caption.className = 'sr-only';
+      caption.textContent = texto;
+      return caption;
+    }
+
+    // Centraliza comparações textuais sem acento para ordenações estáveis.
+    function compararTextoOrdenavel(valorA, valorB) {
+      return String(valorA || '').localeCompare(String(valorB || ''), 'pt-BR', {
+        sensitivity: 'base',
+        numeric: true
+      });
+    }
+
+    // Define o peso visual de cada situação para apoiar ordenações por severidade.
+    function obterPesoSituacao(chaveSituacao) {
+      if (chaveSituacao === 'urgente') {
+        return 1;
+      }
+
+      if (chaveSituacao === 'atencao') {
+        return 2;
+      }
+
+      return 3;
+    }
+
+    // Converte campos heterogêneos do contrato em valores previsíveis para ordenação.
+    function obterValorOrdenavelContrato(contrato, chave) {
+      if (chave === 'ano' || chave === 'valor') {
+        return Number(contrato[chave]) || 0;
+      }
+
+      if (chave === 'fim_vigencia') {
+        const data = parseDataISO(contrato.fim_vigencia);
+        return data ? data.getTime() : Number.MAX_SAFE_INTEGER;
+      }
+
+      if (chave === 'situacao') {
+        return obterPesoSituacao(contrato.situacao.chave);
+      }
+
+      return String(contrato[chave] || '');
+    }
+
+    // Aplica a ordenação padrão por fim de vigência e usa número do contrato como desempate.
+    function compararContratosPorPadrao(contratoA, contratoB) {
+      const valorA = obterValorOrdenavelContrato(contratoA, 'fim_vigencia');
+      const valorB = obterValorOrdenavelContrato(contratoB, 'fim_vigencia');
+
+      if (valorA !== valorB) {
+        return valorA - valorB;
+      }
+
+      return compararTextoOrdenavel(contratoA.numero, contratoB.numero);
+    }
+
+    // Ordena por qualquer coluna mantendo o padrão de vigência como desempate estável.
+    function compararContratosPorChave(contratoA, contratoB, chave, direcao) {
+      const multiplicador = direcao === 'desc' ? -1 : 1;
+      const valorA = obterValorOrdenavelContrato(contratoA, chave);
+      const valorB = obterValorOrdenavelContrato(contratoB, chave);
+      let resultado = 0;
+
+      if (typeof valorA === 'number' && typeof valorB === 'number') {
+        resultado = valorA === valorB ? 0 : valorA - valorB;
+      } else {
+        resultado = compararTextoOrdenavel(valorA, valorB);
+      }
+
+      if (resultado !== 0) {
+        return resultado * multiplicador;
+      }
+
+      return compararContratosPorPadrao(contratoA, contratoB);
+    }
+
+    // Devolve o conjunto já ordenado da seção, sempre ordenando antes da paginação.
+    function ordenarContratosSecao(categoria, contratos) {
+      const estado = obterEstadoSecao(categoria);
+      const itens = Array.isArray(contratos) ? contratos.slice() : [];
+
+      if (!estado.ordenacao) {
+        return itens.sort(compararContratosPorPadrao);
+      }
+
+      return itens.sort(function (contratoA, contratoB) {
+        return compararContratosPorChave(contratoA, contratoB, estado.ordenacao, estado.direcao);
+      });
+    }
+
+    // Traduz o estado atual da ordenação em indicador visual para cada cabeçalho.
+    function obterIndicadorOrdenacao(categoria, chave) {
+      const estado = obterEstadoSecao(categoria);
+
+      if (!estado.ordenacao && chave === 'fim_vigencia') {
+        return '↑·';
+      }
+
+      if (estado.ordenacao !== chave) {
+        return '↕';
+      }
+
+      return estado.direcao === 'asc' ? '↑' : '↓';
+    }
+
+    // Mantém o atributo aria-sort coerente com o cabeçalho ordenável.
+    function obterAriaSortColuna(categoria, chave) {
+      const estado = obterEstadoSecao(categoria);
+
+      if (!estado.ordenacao && chave === 'fim_vigencia') {
+        return 'ascending';
+      }
+
+      if (estado.ordenacao !== chave) {
+        return 'none';
+      }
+
+      return estado.direcao === 'asc' ? 'ascending' : 'descending';
+    }
+
+    // Alterna o ciclo ascendente, descendente e retorno ao padrão da seção.
+    function alternarOrdenacaoSecao(categoria, chave) {
+      const estado = obterEstadoSecao(categoria);
+
+      if (estado.ordenacao !== chave) {
+        estado.ordenacao = chave;
+        estado.direcao = 'asc';
+      } else if (estado.direcao === 'asc') {
+        estado.direcao = 'desc';
+      } else {
+        estado.ordenacao = '';
+        estado.direcao = 'asc';
+      }
+
+      estado.pagina = 1;
+      estado.expandido = '';
+      renderizarSecao(categoria, appState.contratosAgrupadosPorCategoria[categoria] || [], obterIdContainerSecao(categoria));
+      observarSecoesCategorias();
+    }
+
+    // Atualiza apenas a página da seção, preservando os demais estados.
+    function alterarPaginaSecao(categoria, novaPagina) {
+      const estado = obterEstadoSecao(categoria);
+      const total = (appState.contratosAgrupadosPorCategoria[categoria] || []).length;
+      const totalPaginas = Math.max(1, Math.ceil(total / 20));
+
+      estado.pagina = Math.min(Math.max(1, novaPagina), totalPaginas);
+      estado.expandido = '';
+      renderizarSecao(categoria, appState.contratosAgrupadosPorCategoria[categoria] || [], obterIdContainerSecao(categoria));
+      observarSecoesCategorias();
+    }
+
+    // Abre ou fecha a linha detalhada garantindo apenas um accordion por seção.
+    function definirExpandidoEstado(chaveEstado, identificadorContrato) {
+      const estado = obterEstadoSecao(chaveEstado);
+
+      estado.expandido = estado.expandido === identificadorContrato ? '' : identificadorContrato;
+    }
+
+    function alternarAccordionSecao(categoria, identificadorContrato) {
+      definirExpandidoEstado(categoria, identificadorContrato);
+      renderizarSecao(categoria, appState.contratosAgrupadosPorCategoria[categoria] || [], obterIdContainerSecao(categoria));
+      observarSecoesCategorias();
+    }
+
+    // Mapeia categorias para ícones Unicode discretos na seção complementar.
+    function obterIconeCategoria(categoria) {
+      const icones = {
+        'Saúde': '⚕',
+        'Educação': '📘',
+        'Infraestrutura e Obras': '🏗',
+        'Eventos': '📅',
+        'Shows': '🎤',
+        'Locação de Imóveis': '🏠',
+        'Locação de Automóveis': '🚗',
+        'Outros': '📁'
+      };
+
+      return icones[categoria] || '📁';
+    }
+
+    // Resume os dias restantes em linguagem amigável para tooltips e accordion.
+    function formatarResumoDiasRestantes(contrato) {
+      const diasRestantes = contrato && contrato.situacao ? contrato.situacao.diasRestantes : null;
+
+      if (diasRestantes === null) {
+        return 'Sem vigência informada';
+      }
+
+      if (diasRestantes < 0) {
+        return 'Vigência encerrada';
+      }
+
+      if (diasRestantes === 0) {
+        return 'Vence hoje';
+      }
+
+      if (diasRestantes === 1) {
+        return '1 dia restante';
+      }
+
+      return diasRestantes + ' dias restantes';
+    }
+
+    // Produz rótulos curtos para a vigência exibida na tabela principal.
+    function obterResumoVigencia(contrato) {
+      const inicio = formatarDataBR(contrato.inicio_vigencia) || 'Não informado';
+      const fim = formatarDataBR(contrato.fim_vigencia);
+
+      return {
+        principal: fim ? 'Até ' + fim : 'Fim não informado',
+        apoio: 'Início: ' + inicio
+      };
+    }
+
+    // Cria mini-cards com indicadores resumidos da própria categoria.
+    function criarMiniCardsSecao(contratos) {
+      const totalValor = contratos.reduce(function (acumulado, contrato) {
+        return acumulado + (Number(contrato.valor) || 0);
+      }, 0);
+      const urgentes = contratos.filter(function (contrato) {
+        return contrato.situacao.chave === 'urgente';
+      }).length;
+      const atencao = contratos.filter(function (contrato) {
+        return contrato.situacao.chave === 'atencao';
+      }).length;
+      const grid = document.createElement('div');
+
+      grid.className = 'secao-categoria__cards';
+
+      [
+        {
+          rotulo: 'Contratos vigentes',
+          valor: String(contratos.length),
+          apoio: contratos.length === 1 ? '1 contrato visível nesta categoria.' : contratos.length + ' contratos visíveis nesta categoria.',
+          classe: ''
+        },
+        {
+          rotulo: 'Valor total',
+          valor: formatarMoedaBR(totalValor),
+          apoio: 'Somatório do recorte filtrado da categoria.',
+          classe: ''
+        },
+        {
+          rotulo: 'Alertas de vencimento',
+          valor: urgentes + ' / ' + atencao,
+          apoio: urgentes + ' em até 30 dias e ' + atencao + ' entre 31 e 90 dias.',
+          classe: ' secao-categoria__card--alerta'
+        }
+      ].forEach(function (item) {
+        const card = document.createElement('article');
+        const rotulo = document.createElement('p');
+        const valor = document.createElement('p');
+        const apoio = document.createElement('p');
+
+        card.className = 'secao-categoria__card' + item.classe;
+        rotulo.className = 'secao-categoria__card-rotulo';
+        valor.className = 'secao-categoria__card-valor';
+        apoio.className = 'secao-categoria__card-apoio';
+
+        rotulo.textContent = item.rotulo;
+        valor.textContent = item.valor;
+        apoio.textContent = item.apoio;
+
+        card.appendChild(rotulo);
+        card.appendChild(valor);
+        card.appendChild(apoio);
+        grid.appendChild(card);
+      });
+
+      return grid;
+    }
+
+    // Cria badges visuais coerentes com a severidade da vigência.
+    function criarBadgeSituacao(situacao) {
+      const badge = document.createElement('span');
+
+      badge.className = 'badge-situacao badge-situacao--' + situacao.chave;
+      badge.textContent = situacao.rotulo;
+      return badge;
+    }
+
+    // Monta linhas rotuladas reutilizáveis para o accordion e para o tooltip.
+    function criarBlocoInformacao(rotuloTexto, valorTexto, classeRotulo, classeValor) {
+      const bloco = document.createElement('div');
+      const rotulo = document.createElement('span');
+      const valor = document.createElement('span');
+
+      bloco.className = classeRotulo === 'tooltip-contrato__rotulo' ? 'tooltip-contrato__linha' : 'detalhe-contrato__linha';
+      rotulo.className = classeRotulo;
+      valor.className = classeValor;
+      rotulo.textContent = rotuloTexto;
+      valor.textContent = valorTexto;
+
+      bloco.appendChild(rotulo);
+      bloco.appendChild(valor);
+      return bloco;
+    }
+
+    // Controla a ativação do tooltip somente em contextos de desktop com hover real.
+    function dispositivoAceitaTooltipDesktop() {
+      return window.matchMedia('(hover: hover) and (pointer: fine)').matches && window.innerWidth >= 980;
+    }
+
+    // Posiciona o tooltip dentro da viewport com margem de segurança.
+    function posicionarTooltipContrato(posicaoX, posicaoY) {
+      const margem = 12;
+      const tooltip = DOM.tooltipContrato;
+      const largura = tooltip.offsetWidth;
+      const altura = tooltip.offsetHeight;
+      let esquerda = posicaoX + 18;
+      let topo = posicaoY + 18;
+
+      if (esquerda + largura > window.innerWidth - margem) {
+        esquerda = Math.max(margem, posicaoX - largura - 18);
+      }
+
+      if (topo + altura > window.innerHeight - margem) {
+        topo = Math.max(margem, posicaoY - altura - 18);
+      }
+
+      tooltip.style.left = esquerda + 'px';
+      tooltip.style.top = topo + 'px';
+    }
+
+    // Reposiciona o tooltip de modo suave durante o hover da linha.
+    function atualizarPosicaoTooltipContrato(evento) {
+      if (!DOM.tooltipContrato || DOM.tooltipContrato.hidden) {
+        return;
+      }
+
+      if (appState.tooltipRaf) {
+        cancelAnimationFrame(appState.tooltipRaf);
+      }
+
+      appState.tooltipRaf = window.requestAnimationFrame(function () {
+        posicionarTooltipContrato(evento.clientX, evento.clientY);
+      });
+    }
+
+    // Monta e exibe o tooltip desktop com os principais metadados do contrato.
+    function mostrarTooltipContrato(evento, contrato) {
+      if (!DOM.tooltipContrato || !dispositivoAceitaTooltipDesktop()) {
+        return;
+      }
+
+      DOM.tooltipContrato.replaceChildren(
+        criarBlocoInformacao('Objeto completo', contrato.objeto, 'tooltip-contrato__rotulo', 'tooltip-contrato__texto'),
+        criarBlocoInformacao('Fornecedor', contrato.fornecedor, 'tooltip-contrato__rotulo', 'tooltip-contrato__texto'),
+        criarBlocoInformacao(obterRotuloValorContrato(contrato), obterTextoValorContrato(contrato), 'tooltip-contrato__rotulo', 'tooltip-contrato__texto'),
+        criarBlocoInformacao('Dias restantes', formatarResumoDiasRestantes(contrato), 'tooltip-contrato__rotulo', 'tooltip-contrato__texto')
+      );
+
+      DOM.tooltipContrato.hidden = false;
+      atualizarPosicaoTooltipContrato(evento);
+    }
+
+    // Oculta o tooltip sem afetar a navegação de teclado e sem deixar resíduos visuais.
+    function ocultarTooltipContrato() {
+      if (!DOM.tooltipContrato) {
+        return;
+      }
+
+      if (appState.tooltipRaf) {
+        cancelAnimationFrame(appState.tooltipRaf);
+        appState.tooltipRaf = 0;
+      }
+
+      DOM.tooltipContrato.hidden = true;
+      DOM.tooltipContrato.replaceChildren();
+    }
+
+    // Cria o cabeçalho da tabela, com ou sem ordenação clicável conforme o contexto.
+    function criarCabecalhoTabelaSecao(categoria, opcoes) {
+      const configuracao = Object.assign({
+        ordenavel: true
+      }, opcoes || {});
+      const thead = document.createElement('thead');
+      const linha = document.createElement('tr');
+
+      ORDENACAO_COLUNAS.forEach(function (coluna) {
+        const th = document.createElement('th');
+
+        th.scope = 'col';
+
+        if (!configuracao.ordenavel) {
+          th.setAttribute('aria-sort', 'none');
+          th.textContent = coluna.rotulo;
+          linha.appendChild(th);
+          return;
+        }
+
+        const botao = document.createElement('button');
+        const rotulo = document.createElement('span');
+        const indicador = document.createElement('span');
+
+        th.setAttribute('aria-sort', obterAriaSortColuna(categoria, coluna.chave));
+
+        botao.type = 'button';
+        botao.className = 'tabela-contratos__ordenacao';
+        botao.setAttribute('aria-label', 'Ordenar por ' + coluna.rotulo);
+        botao.addEventListener('click', function () {
+          alternarOrdenacaoSecao(categoria, coluna.chave);
+        });
+
+        rotulo.textContent = coluna.rotulo;
+        indicador.className = 'tabela-contratos__ordenacao-indicador';
+        indicador.textContent = obterIndicadorOrdenacao(categoria, coluna.chave);
+
+        botao.appendChild(rotulo);
+        botao.appendChild(indicador);
+        th.appendChild(botao);
+        linha.appendChild(th);
+      });
+
+      thead.appendChild(linha);
+      return thead;
+    }
+
+    // Cria uma célula simples, sempre usando textContent para preservar segurança.
+    function criarCelulaTexto(texto, classe) {
+      const td = document.createElement('td');
+
+      if (classe) {
+        td.className = classe;
+      }
+
+      td.textContent = texto;
+      return td;
+    }
+
+    // Cria as duas linhas da tabela para cada contrato: principal e detalhe em accordion.
+    function criarLinhasContratoSecao(categoria, contrato, opcoes) {
+      const configuracao = Object.assign({
+        chaveEstado: categoria,
+        prefixoDetalhe: 'detalhe',
+        usarBadgeSituacao: true,
+        textoSituacao: contrato && contrato.situacao ? contrato.situacao.rotulo : '—',
+        apoioSituacao: contrato && contrato.situacao ? formatarResumoDiasRestantes(contrato) : '',
+        aoAlternar: function (identificadorExpandido) {
+          alternarAccordionSecao(categoria, identificadorExpandido);
+        }
+      }, opcoes || {});
+      const identificadorBase = obterIdentificadorContrato(contrato);
+      const identificadorExpandido = configuracao.prefixoDetalhe + '-' + identificadorBase;
+      const detalheId = identificadorExpandido;
+      const expandido = !appState.modoImpressao && obterEstadoSecao(configuracao.chaveEstado).expandido === identificadorExpandido;
+      const resumoVigencia = obterResumoVigencia(contrato);
+      const linhaPrincipal = document.createElement('tr');
+      const linhaDetalhe = document.createElement('tr');
+      const celulaVigencia = document.createElement('td');
+      const celulaSituacao = document.createElement('td');
+      const vigenciaPrincipal = document.createElement('span');
+      const vigenciaApoio = document.createElement('span');
+      const detalheCelula = document.createElement('td');
+      const detalhe = document.createElement('div');
+
+      linhaPrincipal.className = 'tabela-contratos__linha' + (expandido ? ' is-expandida' : '');
+      linhaPrincipal.tabIndex = 0;
+      linhaPrincipal.setAttribute('role', 'button');
+      linhaPrincipal.setAttribute('aria-label', (expandido ? 'Recolher' : 'Expandir') + ' detalhes do contrato ' + contrato.numero);
+      linhaPrincipal.setAttribute('aria-expanded', expandido ? 'true' : 'false');
+      linhaPrincipal.setAttribute('aria-controls', detalheId);
+      linhaPrincipal.setAttribute('data-contrato-id', identificadorExpandido);
+
+      linhaPrincipal.appendChild(criarCelulaTexto(String(contrato.ano), 'tabela-contratos__valor'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.numero, 'tabela-contratos__principal'));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.fornecedor));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.objeto));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.processo));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.modalidade));
+      linhaPrincipal.appendChild(criarCelulaTexto(contrato.tipo));
+      linhaPrincipal.appendChild(criarCelulaTexto(obterTextoValorTabela(contrato), 'tabela-contratos__valor'));
+
+      vigenciaPrincipal.className = 'tabela-contratos__principal';
+      vigenciaPrincipal.textContent = resumoVigencia.principal;
+      vigenciaApoio.className = 'tabela-contratos__muted';
+      vigenciaApoio.textContent = resumoVigencia.apoio;
+      celulaVigencia.appendChild(vigenciaPrincipal);
+      celulaVigencia.appendChild(vigenciaApoio);
+      linhaPrincipal.appendChild(celulaVigencia);
+
+      if (configuracao.usarBadgeSituacao) {
+        const badgeSituacao = criarBadgeSituacao(contrato.situacao);
+        const situacaoApoio = document.createElement('span');
+
+        situacaoApoio.className = 'tabela-contratos__muted';
+        situacaoApoio.textContent = configuracao.apoioSituacao;
+        celulaSituacao.appendChild(badgeSituacao);
+
+        if (configuracao.apoioSituacao) {
+          celulaSituacao.appendChild(situacaoApoio);
+        }
+      } else {
+        const situacaoPrincipal = document.createElement('span');
+
+        situacaoPrincipal.className = 'tabela-contratos__principal';
+        situacaoPrincipal.textContent = configuracao.textoSituacao;
+        celulaSituacao.appendChild(situacaoPrincipal);
+
+        if (configuracao.apoioSituacao) {
+          const situacaoApoio = document.createElement('span');
+
+          situacaoApoio.className = 'tabela-contratos__muted';
+          situacaoApoio.textContent = configuracao.apoioSituacao;
+          celulaSituacao.appendChild(situacaoApoio);
+        }
+      }
+
+      linhaPrincipal.appendChild(celulaSituacao);
+
+      linhaPrincipal.addEventListener('click', function () {
+        ocultarTooltipContrato();
+        configuracao.aoAlternar(identificadorExpandido);
+      });
+
+      linhaPrincipal.addEventListener('keydown', function (evento) {
+        if (evento.key === 'Enter' || evento.key === ' ') {
+          evento.preventDefault();
+          ocultarTooltipContrato();
+          configuracao.aoAlternar(identificadorExpandido);
+        }
+      });
+
+      linhaPrincipal.addEventListener('mouseenter', function (evento) {
+        mostrarTooltipContrato(evento, contrato);
+      });
+      linhaPrincipal.addEventListener('mousemove', atualizarPosicaoTooltipContrato);
+      linhaPrincipal.addEventListener('mouseleave', ocultarTooltipContrato);
+      linhaPrincipal.addEventListener('blur', ocultarTooltipContrato);
+
+      linhaDetalhe.className = 'tabela-contratos__detalhe';
+      linhaDetalhe.id = detalheId;
+      linhaDetalhe.hidden = !expandido;
+
+      detalheCelula.colSpan = ORDENACAO_COLUNAS.length;
+      detalhe.className = 'detalhe-contrato';
+      detalhe.appendChild(criarBlocoInformacao('Objeto completo', contrato.objeto, 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      detalhe.appendChild(criarBlocoInformacao(obterRotuloValorContrato(contrato), obterTextoValorContrato(contrato), 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      if (contrato.valor_texto) detalhe.appendChild(criarBlocoInformacao('Valor para calculo', formatarMoedaBR(contrato.valor), 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      detalhe.appendChild(criarBlocoInformacao('Vigência e prazo', resumoVigencia.principal + ' • ' + formatarResumoDiasRestantes(contrato), 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      if (contrato.processo) detalhe.appendChild(criarBlocoInformacao('Processo', contrato.processo, 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      if (contrato.status_excel) detalhe.appendChild(criarBlocoInformacao('Status no Excel', contrato.status_excel, 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      if (contrato.observacoes) detalhe.appendChild(criarBlocoInformacao('Observações', contrato.observacoes, 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+      if (contrato.gestor_fiscal) detalhe.appendChild(criarBlocoInformacao('Gestor/Fiscal', contrato.gestor_fiscal, 'detalhe-contrato__rotulo', 'detalhe-contrato__valor'));
+
+      detalheCelula.appendChild(detalhe);
+      linhaDetalhe.appendChild(detalheCelula);
+
+      return {
+        principal: linhaPrincipal,
+        detalhe: linhaDetalhe
+      };
+    }
+
+    // Ordena os contratos sem vigência por ano decrescente e número crescente.
+    function ordenarContratosSemVigencia(contratos) {
+      return (Array.isArray(contratos) ? contratos.slice() : []).sort(function (contratoA, contratoB) {
+        const anoA = Number(contratoA.ano) || 0;
+        const anoB = Number(contratoB.ano) || 0;
+
+        if (anoA !== anoB) {
+          return anoB - anoA;
+        }
+
+        return compararTextoOrdenavel(contratoA.numero, contratoB.numero);
+      });
+    }
+
+    // Mantém a ordenação de categorias visíveis com fallback para a seção complementar.
+    function obterCategoriasComDadosEmOrdem(agrupado) {
+      const categorias = CATEGORIAS_VALIDAS.filter(function (categoria) {
+        return (agrupado[categoria] || []).length > 0;
+      });
+
+      if ((agrupado[CATEGORIA_FALLBACK] || []).length > 0) {
+        categorias.push(CATEGORIA_FALLBACK);
+      }
+
+      return categorias;
+    }
+
+    // Gera o valor numérico do CSV sem símbolo monetário e sem separador de milhar.
+    function formatarValorCSV(valor) {
+      return (Number(valor) || 0).toFixed(2).replace('.', ',');
+    }
+
+    // Padroniza a vigência textual exportada no CSV usando o formato brasileiro.
+    function obterVigenciaCSV(contrato) {
+      const inicio = formatarDataBR(contrato.inicio_vigencia) || '—';
+      const fim = formatarDataBR(contrato.fim_vigencia) || '—';
+
+      return inicio + ' a ' + fim;
+    }
+
+    // Reúne os cabeçalhos oficiais das exportações CSV.
+    function obterCabecalhosCSV() {
+      return ['Ano', 'Nº Contrato', 'Fornecedor', 'Objeto', 'Processo', 'Modalidade', 'Tipo', 'Valor (R$)', 'Valor original', 'Vigência', 'Situação', 'Status no Excel'];
+    }
+
+    // Converte um contrato saneado em uma linha pronta para serialização CSV.
+    function obterLinhaCSVContrato(contrato, opcoes) {
+      const configuracao = Object.assign({
+        situacao: contrato && contrato.situacao ? contrato.situacao.rotulo : '—'
+      }, opcoes || {});
+
+      return [
+        String(contrato.ano || ''),
+        contrato.numero || '',
+        contrato.fornecedor || '',
+        contrato.objeto || '',
+        contrato.processo || '',
+        contrato.modalidade || '',
+        contrato.tipo || '',
+        formatarValorCSV(contrato.valor),
+        contrato.valor_texto || '',
+        obterVigenciaCSV(contrato),
+        configuracao.situacao,
+        contrato.status_excel || ''
+      ];
+    }
+
+    // Serializa a matriz de linhas CSV usando ; e escape resiliente dos campos.
+    function serializarLinhasCSV(linhas) {
+      return linhas.map(function (linha) {
+        return linha.map(escaparCSV).join(';');
+      }).join('\r\n');
+    }
+
+    // Usa a data local atual para compor nomes previsíveis de arquivo.
+    function obterDataAtualArquivo() {
+      const agora = new Date();
+      const ano = String(agora.getFullYear());
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const dia = String(agora.getDate()).padStart(2, '0');
+
+      return ano + '-' + mes + '-' + dia;
+    }
+
+    // Faz o download local do conteúdo CSV com BOM UTF-8 para boa compatibilidade com Excel.
+    function baixarArquivoCSV(conteudo, nomeArquivo) {
+      const blob = new Blob(['\ufeff', conteudo], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = nomeArquivo;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.setTimeout(function () {
+        window.URL.revokeObjectURL(url);
+      }, 1200);
+    }
+
+    // Acrescenta um bloco categorizado ao CSV global ou ao export agrupado por categorias.
+    function adicionarBlocoCategoriaCSV(linhas, tituloCategoria, contratos, opcoes) {
+      const configuracao = Object.assign({}, opcoes || {});
+
+      if (!Array.isArray(contratos) || !contratos.length) {
+        return;
+      }
+
+      linhas.push(['Categoria', tituloCategoria]);
+      linhas.push(obterCabecalhosCSV());
+
+      contratos.forEach(function (contrato) {
+        linhas.push(obterLinhaCSVContrato(contrato, configuracao));
+      });
+
+      linhas.push([]);
+    }
+
+    // Exporta uma categoria principal respeitando filtros e ordenação atual da seção.
+    function exportarCSVSecao(categoria) {
+      const contratos = ordenarContratosSecao(categoria, appState.contratosAgrupadosPorCategoria[categoria] || []);
+
+      if (!contratos.length) {
+        mostrarMensagemDados('Não há contratos vigentes visíveis para exportar na categoria "' + categoria + '".', 'info');
+        return;
+      }
+
+      const conteudo = serializarLinhasCSV([obterCabecalhosCSV()].concat(
+        contratos.map(function (contrato) {
+          return obterLinhaCSVContrato(contrato);
+        })
+      ));
+      const nomeArquivo = 'contratos-' + slugifyCategoria(categoria) + '-' + obterDataAtualArquivo() + '.csv';
+
+      baixarArquivoCSV(conteudo, nomeArquivo);
+      mostrarMensagemDados('CSV gerado com sucesso para a categoria "' + categoria + '".', 'info');
+    }
+
+    // Exporta a seção complementar de contratos sem vigência informada, agrupada por categoria.
+    function exportarCSVSemVigencia() {
+      const agrupado = agruparPorCategoria(appState.contratosSemVigenciaFiltrados);
+      const categorias = obterCategoriasComDadosEmOrdem(agrupado);
+      const linhas = [];
+
+      if (!categorias.length) {
+        mostrarMensagemDados('Não há contratos sem vigência informada no recorte atual para exportar.', 'info');
+        return;
+      }
+
+      categorias.forEach(function (categoria) {
+        adicionarBlocoCategoriaCSV(linhas, categoria, ordenarContratosSemVigencia(agrupado[categoria] || []), {
+          situacao: '—'
+        });
+      });
+
+      baixarArquivoCSV(
+        serializarLinhasCSV(linhas),
+        'contratos-sem-vigencia-informada-' + obterDataAtualArquivo() + '.csv'
+      );
+      mostrarMensagemDados('CSV gerado com sucesso para a seção de contratos sem vigência informada.', 'info');
+    }
+
+    // Exporta o painel completo agrupando categorias visíveis e encerrando com a seção sem vigência.
+    function exportarCSVGlobal() {
+      const linhas = [];
+      let possuiConteudo = false;
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        const contratos = ordenarContratosSecao(categoria, appState.contratosAgrupadosPorCategoria[categoria] || []);
+
+        if (!contratos.length) {
+          return;
+        }
+
+        adicionarBlocoCategoriaCSV(linhas, categoria, contratos);
+        possuiConteudo = true;
+      });
+
+      if (appState.contratosSemVigenciaFiltrados.length) {
+        const agrupadoSemVigencia = agruparPorCategoria(appState.contratosSemVigenciaFiltrados);
+        const categoriasSemVigencia = obterCategoriasComDadosEmOrdem(agrupadoSemVigencia);
+
+        linhas.push(['Seção', 'Contratos sem vigência informada']);
+        linhas.push([]);
+
+        categoriasSemVigencia.forEach(function (categoria) {
+          adicionarBlocoCategoriaCSV(linhas, categoria, ordenarContratosSemVigencia(agrupadoSemVigencia[categoria] || []), {
+            situacao: '—'
+          });
+        });
+
+        possuiConteudo = true;
+      }
+
+      if (!possuiConteudo) {
+        mostrarMensagemDados('Não há contratos visíveis no recorte atual para exportação global.', 'info');
+        return;
+      }
+
+      baixarArquivoCSV(
+        serializarLinhasCSV(linhas),
+        'painel-contratos-' + obterDataAtualArquivo() + '.csv'
+      );
+      mostrarMensagemDados('CSV global gerado com sucesso conforme os filtros atuais.', 'info');
+    }
+
+    // Cria cada botão da navegação sticky com contagem e estado ativo/inativo.
+    function criarItemNavCategoria(categoria, quantidade) {
+      const itemLista = document.createElement('li');
+      const botao = document.createElement('button');
+      const rotulo = document.createElement('span');
+      const contagem = document.createElement('span');
+
+      botao.type = 'button';
+      botao.className = 'nav-categorias__item';
+      botao.disabled = quantidade === 0;
+      botao.setAttribute('data-categoria', categoria);
+      botao.setAttribute('aria-current', 'false');
+      botao.setAttribute('aria-controls', obterIdSecao(categoria));
+
+      rotulo.textContent = categoria;
+      contagem.className = 'nav-categorias__contagem';
+      contagem.textContent = '(' + quantidade + ')';
+
+      botao.appendChild(rotulo);
+      botao.appendChild(contagem);
+
+      botao.addEventListener('click', function () {
+        if (botao.disabled) {
+          return;
+        }
+
+        const alvo = document.getElementById('secao-' + slugifyCategoria(categoria));
+        if (alvo) {
+          alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+
+      itemLista.appendChild(botao);
+      return itemLista;
+    }
+
+    // Renderiza a navegação sticky por categorias com contagens atualizadas.
+    function renderizarNavegacaoCategorias(contagens) {
+      DOM.navCategoriasLista.replaceChildren();
+
+      const fragmento = document.createDocumentFragment();
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        fragmento.appendChild(criarItemNavCategoria(categoria, contagens[categoria] || 0));
+      });
+
+      DOM.navCategoriasLista.appendChild(fragmento);
+    }
+
+    // Atualiza visualmente a categoria destacada na navegação sticky.
+    function destacarCategoriaNaNavegacao(categoria) {
+      appState.categoriaAtiva = categoria || '';
+
+      DOM.navCategoriasLista.querySelectorAll('.nav-categorias__item').forEach(function (botao) {
+        const ativa = botao.getAttribute('data-categoria') === categoria;
+        botao.classList.toggle('is-active', ativa);
+        botao.setAttribute('aria-current', ativa ? 'true' : 'false');
+      });
+    }
+
+    // Garante a existência dos containers fixos na ordem obrigatória das categorias.
+    function garantirContainersSecoesCategorias() {
+      const fragmento = document.createDocumentFragment();
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        const container = document.createElement('div');
+
+        container.id = obterIdContainerSecao(categoria);
+        fragmento.appendChild(container);
+      });
+
+      DOM.secoesCategorias.replaceChildren(fragmento);
+    }
+
+    // Renderiza uma única seção reutilizável com cards, tabela, accordion e paginação.
+    function renderizarSecao(categoria, contratos, containerId) {
+      const container = document.getElementById(containerId);
+      const lista = Array.isArray(contratos) ? contratos : [];
+      const estado = obterEstadoSecao(categoria);
+      const slug = slugifyCategoria(categoria);
+      const secao = document.createElement('section');
+      const cabecalho = document.createElement('div');
+      const blocoTitulo = document.createElement('div');
+      const titulo = document.createElement('h3');
+      const descricao = document.createElement('p');
+
+      if (!container) {
+        return;
+      }
+
+      secao.className = 'secao-categoria';
+      secao.id = obterIdSecao(categoria);
+      secao.setAttribute('data-categoria', categoria);
+      secao.setAttribute('data-tem-conteudo', lista.length > 0 ? 'true' : 'false');
+
+      cabecalho.className = 'secao-categoria__cabecalho';
+      blocoTitulo.className = 'secao-categoria__meta';
+      titulo.className = 'secao-categoria__titulo';
+      descricao.className = 'secao-categoria__descricao';
+
+      titulo.id = 'titulo-secao-' + slug;
+      titulo.textContent = categoria;
+      descricao.textContent = lista.length === 0
+        ? 'Nenhum contrato vigente desta categoria atende aos filtros atuais.'
+        : formatarQuantidade(lista.length, 'contrato vigente visível', 'contratos vigentes visíveis') + ' neste recorte.';
+
+      blocoTitulo.appendChild(titulo);
+      blocoTitulo.appendChild(descricao);
+      cabecalho.appendChild(blocoTitulo);
+      secao.setAttribute('aria-labelledby', titulo.id);
+      secao.appendChild(cabecalho);
+
+      if (!lista.length) {
+        const corpoVazio = document.createElement('div');
+        const vazio = document.createElement('div');
+        const textoVazio = document.createElement('p');
+
+        corpoVazio.className = 'secao-categoria__corpo';
+        vazio.className = 'secao-categoria__vazio';
+        textoVazio.className = 'secao-categoria__vazio-texto';
+        textoVazio.textContent = 'Ajuste os filtros globais para exibir contratos desta categoria.';
+
+        vazio.appendChild(textoVazio);
+        corpoVazio.appendChild(vazio);
+        secao.appendChild(corpoVazio);
+        container.replaceChildren(secao);
+        return;
+      }
+
+      const acoes = document.createElement('div');
+      const botaoExportar = document.createElement('button');
+      const corpo = document.createElement('div');
+      const tabelaWrapper = document.createElement('div');
+      const tabela = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const fragmentoLinhas = document.createDocumentFragment();
+      const contratosOrdenados = ordenarContratosSecao(categoria, lista);
+      const totalContratos = contratosOrdenados.length;
+      const totalPaginas = Math.max(1, Math.ceil(totalContratos / 20));
+      let contratosExibidos = [];
+
+      estado.pagina = Math.min(Math.max(1, estado.pagina), totalPaginas);
+
+      const indiceInicial = (estado.pagina - 1) * 20;
+      contratosExibidos = appState.modoImpressao
+        ? contratosOrdenados
+        : contratosOrdenados.slice(indiceInicial, indiceInicial + 20);
+      const paginacao = document.createElement('div');
+      const contador = document.createElement('p');
+      const controlesPaginacao = document.createElement('div');
+      const paginaStatus = document.createElement('span');
+      const botaoAnterior = document.createElement('button');
+      const botaoProxima = document.createElement('button');
+
+      acoes.className = 'secao-categoria__acoes';
+      botaoExportar.type = 'button';
+      botaoExportar.className = 'botao-acao botao-acao--secundario botao-acao--compacto';
+      botaoExportar.textContent = 'Exportar CSV';
+      botaoExportar.setAttribute('aria-label', 'Exportar contratos da categoria ' + categoria + ' em CSV');
+      botaoExportar.addEventListener('click', function () {
+        exportarCSVSecao(categoria);
+      });
+      acoes.appendChild(botaoExportar);
+      cabecalho.appendChild(acoes);
+
+      secao.appendChild(criarMiniCardsSecao(lista));
+
+      corpo.className = 'secao-categoria__corpo';
+      tabelaWrapper.className = 'tabela-wrapper';
+      tabela.id = obterIdTabelaSecao(categoria);
+      tabela.className = 'tabela-contratos';
+      tabela.setAttribute('aria-labelledby', titulo.id);
+
+      tabela.appendChild(criarCaptionTabela('Tabela da categoria ' + categoria + ' com contratos vigentes filtrados.'));
+      tabela.appendChild(criarCabecalhoTabelaSecao(categoria));
+
+      contratosExibidos.forEach(function (contrato) {
+        const linhas = criarLinhasContratoSecao(categoria, contrato);
+
+        fragmentoLinhas.appendChild(linhas.principal);
+        fragmentoLinhas.appendChild(linhas.detalhe);
+      });
+
+      tbody.appendChild(fragmentoLinhas);
+      tabela.appendChild(tbody);
+      tabelaWrapper.appendChild(tabela);
+      corpo.appendChild(tabelaWrapper);
+
+      paginacao.className = 'paginacao-secao';
+      contador.className = 'secao-categoria__contador';
+      contador.textContent = 'Exibindo ' + contratosExibidos.length + ' de ' + totalContratos + ' ' + (totalContratos === 1 ? 'contrato' : 'contratos');
+
+      controlesPaginacao.className = 'paginacao-secao__acoes';
+      paginaStatus.className = 'paginacao-secao__status';
+      paginaStatus.textContent = 'Página ' + estado.pagina + ' de ' + totalPaginas;
+
+      botaoAnterior.type = 'button';
+      botaoAnterior.className = 'botao-acao botao-acao--secundario botao-acao--compacto';
+      botaoAnterior.textContent = 'Anterior';
+      botaoAnterior.disabled = estado.pagina === 1;
+      botaoAnterior.addEventListener('click', function () {
+        alterarPaginaSecao(categoria, estado.pagina - 1);
+      });
+
+      botaoProxima.type = 'button';
+      botaoProxima.className = 'botao-acao botao-acao--secundario botao-acao--compacto';
+      botaoProxima.textContent = 'Próxima';
+      botaoProxima.disabled = estado.pagina === totalPaginas;
+      botaoProxima.addEventListener('click', function () {
+        alterarPaginaSecao(categoria, estado.pagina + 1);
+      });
+
+      controlesPaginacao.appendChild(botaoAnterior);
+      controlesPaginacao.appendChild(paginaStatus);
+      controlesPaginacao.appendChild(botaoProxima);
+
+      paginacao.appendChild(contador);
+      paginacao.appendChild(controlesPaginacao);
+      corpo.appendChild(paginacao);
+
+      secao.appendChild(corpo);
+      container.replaceChildren(secao);
+    }
+
+    // Renderiza as sete categorias fixas reutilizando a mesma função por seção.
+    function renderizarSecoesCategorias(agrupado) {
+      garantirContainersSecoesCategorias();
+
+      CATEGORIAS_VALIDAS.forEach(function (categoria) {
+        renderizarSecao(categoria, agrupado[categoria] || [], obterIdContainerSecao(categoria));
+      });
+    }
+
+    // Cria um grupo da seção complementar, mantendo a tabela equivalente à seção principal.
+    function criarGrupoSemVigencia(categoria, contratos) {
+      const chaveEstado = 'sem-vigencia-' + slugifyCategoria(categoria);
+      const grupo = document.createElement('section');
+      const titulo = document.createElement('h3');
+      const icone = document.createElement('span');
+      const textoTitulo = document.createElement('span');
+      const meta = document.createElement('p');
+      const tabelaWrapper = document.createElement('div');
+      const tabela = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const fragmentoLinhas = document.createDocumentFragment();
+      const contratosOrdenados = ordenarContratosSemVigencia(contratos);
+
+      grupo.className = 'secao-sem-vigencia__grupo';
+      titulo.className = 'secao-sem-vigencia__titulo';
+      icone.className = 'secao-sem-vigencia__icone';
+      meta.className = 'secao-sem-vigencia__meta';
+      tabelaWrapper.className = 'tabela-wrapper';
+      tabela.className = 'tabela-contratos';
+      titulo.id = 'titulo-sem-vigencia-' + slugifyCategoria(categoria);
+      tabela.setAttribute('aria-labelledby', titulo.id);
+
+      icone.setAttribute('aria-hidden', 'true');
+      icone.textContent = obterIconeCategoria(categoria);
+      textoTitulo.textContent = categoria;
+      meta.textContent = formatarQuantidade(contratosOrdenados.length, 'contrato sem vigência informada', 'contratos sem vigência informada');
+
+      titulo.appendChild(icone);
+      titulo.appendChild(textoTitulo);
+      grupo.appendChild(titulo);
+      grupo.appendChild(meta);
+
+      tabela.appendChild(criarCaptionTabela('Tabela de contratos sem vigência informada da categoria ' + categoria + '.'));
+      tabela.appendChild(criarCabecalhoTabelaSecao(categoria, { ordenavel: false }));
+
+      contratosOrdenados.forEach(function (contrato) {
+        const linhas = criarLinhasContratoSecao(categoria, contrato, {
+          chaveEstado: chaveEstado,
+          prefixoDetalhe: 'detalhe-sem-vigencia-' + slugifyCategoria(categoria),
+          usarBadgeSituacao: false,
+          textoSituacao: '—',
+          apoioSituacao: '',
+          aoAlternar: function (identificadorExpandido) {
+            definirExpandidoEstado(chaveEstado, identificadorExpandido);
+            renderizarSecaoSemVigencia(appState.contratosSemVigenciaFiltrados);
+          }
+        });
+
+        fragmentoLinhas.appendChild(linhas.principal);
+        fragmentoLinhas.appendChild(linhas.detalhe);
+      });
+
+      tbody.appendChild(fragmentoLinhas);
+      tabela.appendChild(tbody);
+      tabelaWrapper.appendChild(tabela);
+      grupo.appendChild(tabelaWrapper);
+
+      return grupo;
+    }
+
+    // Renderiza a seção complementar de contratos sem vigência agrupada por categoria.
+    function renderizarSecaoSemVigencia(contratosSemVigencia) {
+      const contratos = Array.isArray(contratosSemVigencia) ? contratosSemVigencia : [];
+      const agrupado = agruparPorCategoria(contratos);
+      const categorias = obterCategoriasComDadosEmOrdem(agrupado);
+      const bloco = document.createElement('section');
+      const cabecalho = document.createElement('div');
+      const blocoTitulo = document.createElement('div');
+      const titulo = document.createElement('h3');
+      const descricao = document.createElement('p');
+      const corpo = document.createElement('div');
+
+      DOM.containerSemVigencia.replaceChildren();
+
+      bloco.className = 'secao-categoria';
+      cabecalho.className = 'secao-categoria__cabecalho';
+      blocoTitulo.className = 'secao-categoria__meta';
+      titulo.className = 'secao-categoria__titulo';
+      descricao.className = 'secao-categoria__descricao';
+      corpo.className = 'secao-categoria__corpo';
+
+      titulo.id = 'titulo-listagem-sem-vigencia';
+      titulo.textContent = 'Listagem complementar';
+      descricao.textContent = contratos.length === 0
+        ? 'Nenhum contrato filtrado depende desta seção no momento.'
+        : formatarQuantidade(contratos.length, 'contrato sem vigência informada', 'contratos sem vigência informada') + ' distribuídos em ' + categorias.length + ' ' + (categorias.length === 1 ? 'categoria' : 'categorias') + '.';
+
+      blocoTitulo.appendChild(titulo);
+      blocoTitulo.appendChild(descricao);
+      cabecalho.appendChild(blocoTitulo);
+      bloco.setAttribute('aria-labelledby', titulo.id);
+
+      if (contratos.length) {
+        const acoes = document.createElement('div');
+        const botaoExportar = document.createElement('button');
+
+        acoes.className = 'secao-categoria__acoes';
+        botaoExportar.type = 'button';
+        botaoExportar.className = 'botao-acao botao-acao--secundario botao-acao--compacto';
+        botaoExportar.textContent = 'Exportar CSV';
+        botaoExportar.setAttribute('aria-label', 'Exportar contratos sem vigência informada em CSV');
+        botaoExportar.addEventListener('click', exportarCSVSemVigencia);
+        acoes.appendChild(botaoExportar);
+        cabecalho.appendChild(acoes);
+      }
+
+      bloco.appendChild(cabecalho);
+
+      if (!contratos.length) {
+        const vazio = document.createElement('div');
+        const textoVazio = document.createElement('p');
+
+        vazio.className = 'secao-categoria__vazio';
+        textoVazio.className = 'secao-categoria__vazio-texto';
+        textoVazio.textContent = 'Nenhum contrato sem vigência informada atende aos filtros atuais.';
+        vazio.appendChild(textoVazio);
+        corpo.appendChild(vazio);
+        bloco.appendChild(corpo);
+        DOM.containerSemVigencia.appendChild(bloco);
+        return;
+      }
+
+      const grupos = document.createElement('div');
+
+      grupos.className = 'secao-sem-vigencia__grupos';
+
+      categorias.forEach(function (categoria) {
+        grupos.appendChild(criarGrupoSemVigencia(categoria, agrupado[categoria] || []));
+      });
+
+      corpo.appendChild(grupos);
+      bloco.appendChild(corpo);
+      DOM.containerSemVigencia.appendChild(bloco);
+    }
+
+    // Reconecta o IntersectionObserver às seções visíveis após cada render.
+    function observarSecoesCategorias() {
+      if (appState.observadorCategorias) {
+        appState.observadorCategorias.disconnect();
+      }
+
+      if (appState.modoImpressao) {
+        destacarCategoriaNaNavegacao('');
+        return;
+      }
+
+      const secoes = Array.from(DOM.secoesCategorias.querySelectorAll('[data-categoria]'));
+
+      if (!secoes.length) {
+        return;
+      }
+
+      if (!('IntersectionObserver' in window)) {
+        const primeiraSecao = secoes.find(function (secao) {
+          return secao.getAttribute('data-tem-conteudo') === 'true';
+        });
+
+        destacarCategoriaNaNavegacao(primeiraSecao ? primeiraSecao.getAttribute('data-categoria') : '');
+        return;
+      }
+
+      appState.observadorCategorias = new IntersectionObserver(function (entradas) {
+        const visiveis = entradas.filter(function (entrada) {
+          return entrada.isIntersecting && entrada.target.getAttribute('data-tem-conteudo') === 'true';
+        });
+
+        if (!visiveis.length) {
+          return;
+        }
+
+        visiveis.sort(function (entradaA, entradaB) {
+          return Math.abs(entradaA.boundingClientRect.top) - Math.abs(entradaB.boundingClientRect.top);
+        });
+
+        destacarCategoriaNaNavegacao(visiveis[0].target.getAttribute('data-categoria'));
+      }, {
+        rootMargin: '-30% 0px -55% 0px',
+        threshold: [0.2, 0.45, 0.7]
+      });
+
+      secoes.forEach(function (secao) {
+        appState.observadorCategorias.observe(secao);
+      });
+    }
+
+    // Recalcula toda a camada principal de interação a partir dos filtros atuais.
+    function atualizarOffsetNavegacaoSticky() {
+      if (!DOM.navCategorias) {
+        return;
+      }
+
+      const topoSticky = Number.parseFloat(window.getComputedStyle(DOM.navCategorias).top) || 0;
+      const alturaNav = DOM.navCategorias.offsetHeight || 0;
+      const margemExtra = window.innerWidth <= 767 ? 16 : 22;
+
+      DOM.html.style.setProperty('--offset-secao', Math.ceil(topoSticky + alturaNav + margemExtra) + 'px');
+    }
+
+    function executarRenderizacaoPrincipal() {
+      const filtrados = filtrarContratos(appState.contratos, appState.filtros);
+      const vigentes = filtrados.filter(function (contrato) {
+        return contrato.situacao.chave === 'regular' ||
+          contrato.situacao.chave === 'atencao' ||
+          contrato.situacao.chave === 'urgente';
+      });
+      const semVigencia = filtrados.filter(function (contrato) {
+        return contrato.situacao.chave === 'sem_vigencia';
+      });
+      const agrupado = agruparPorCategoria(vigentes);
+      const contagens = calcularContagensPorCategoria(agrupado);
+
+      appState.contratosFiltrados = filtrados;
+      appState.contratosVigentesFiltrados = vigentes;
+      appState.contratosSemVigenciaFiltrados = semVigencia;
+      appState.contratosAgrupadosPorCategoria = agrupado;
+      appState.contagensPorCategoria = contagens;
+
+      renderizarCardsGlobais(vigentes);
+      renderizarResumoFiltros(filtrados, vigentes, semVigencia);
+      renderizarNavegacaoCategorias(contagens);
+      renderizarSecoesCategorias(agrupado);
+      renderizarSecaoSemVigencia(semVigencia);
+      atualizarOffsetNavegacaoSticky();
+      observarSecoesCategorias();
+
+      const primeiraCategoriaComDados = CATEGORIAS_VALIDAS.find(function (categoria) {
+        return (contagens[categoria] || 0) > 0;
+      }) || '';
+
+      destacarCategoriaNaNavegacao(appState.modoImpressao ? '' : primeiraCategoriaComDados);
+    }
+
+    function renderizarCamadaPrincipal(imediato) {
+      if (appState.renderRaf) {
+        window.cancelAnimationFrame(appState.renderRaf);
+        appState.renderRaf = 0;
+      }
+
+      if (imediato || appState.modoImpressao) {
+        executarRenderizacaoPrincipal();
+        return;
+      }
+
+      appState.renderRaf = window.requestAnimationFrame(function () {
+        appState.renderRaf = 0;
+        executarRenderizacaoPrincipal();
+      });
+    }
+
+    // Handler central único para toda alteração de filtro, incluindo busca com debounce.
+    function processarAlteracaoFiltros() {
+      resetarEstadosFuturos();
+      appState.filtros = obterFiltrosDoDOM();
+      sincronizarFiltrosNaURL(appState.filtros);
+      renderizarCamadaPrincipal();
+    }
+
+    // Utilitário simples para verificar se o tema escuro está ativo.
+    function temaEhEscuro(tema) {
+      return tema === 'dark';
+    }
+
+    // Lê a preferência do usuário no sistema quando ainda não existe tema salvo.
+    function obterTemaPreferidoDoSistema() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // Atualiza o ícone, atributos ARIA e cor do navegador conforme o tema aplicado.
+    function atualizarEstadoVisualDoTema(tema) {
+      const escuro = temaEhEscuro(tema);
+      DOM.themeToggleIcon.textContent = escuro ? '☀️' : '🌙';
+      DOM.themeToggle.setAttribute('aria-label', escuro ? 'Alternar para modo claro' : 'Alternar para modo escuro');
+      DOM.themeToggle.setAttribute('aria-pressed', String(escuro));
+
+      if (DOM.themeMeta) {
+        DOM.themeMeta.setAttribute('content', escuro ? '#101827' : '#3a5ea6');
+      }
+    }
+
+    // Aplica o tema na raiz do documento e tenta persistir a preferência.
+    function aplicarTema(tema, persistir) {
+      DOM.html.classList.toggle('dark', temaEhEscuro(tema));
+      atualizarEstadoVisualDoTema(tema);
+
+      if (!persistir) {
+        return;
+      }
+
+      try {
+        window.localStorage.setItem(STORAGE_THEME_KEY, tema);
+      } catch (erro) {
+        return;
+      }
+    }
+
+    // Decide qual tema usar na primeira carga: salvo no navegador ou preferência do sistema.
+    function inicializarTema() {
+      let temaSalvo = '';
+
+      try {
+        temaSalvo = window.localStorage.getItem(STORAGE_THEME_KEY) || '';
+      } catch (erro) {
+        temaSalvo = '';
+      }
+
+      aplicarTema(temaSalvo || obterTemaPreferidoDoSistema(), false);
+    }
+
+    // Inverte o tema atual entre claro e escuro.
+    function alternarTema() {
+      const proximoTema = DOM.html.classList.contains('dark') ? 'light' : 'dark';
+      aplicarTema(proximoTema, true);
+    }
+
+    // Atualiza a visibilidade do botão flutuante de retorno ao topo.
+    function atualizarBotaoTopo() {
+      DOM.botaoTopo.classList.toggle('is-visible', window.scrollY > 320);
+    }
+
+    // Faz a página retornar suavemente ao topo.
+    function voltarAoTopo() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function obterTextoCarimboImpressao() {
+      const agora = new Date();
+      const dia = String(agora.getDate()).padStart(2, '0');
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const ano = String(agora.getFullYear());
+      const horas = String(agora.getHours()).padStart(2, '0');
+      const minutos = String(agora.getMinutes()).padStart(2, '0');
+
+      return 'Impresso em ' + dia + '/' + mes + '/' + ano + ' às ' + horas + ':' + minutos;
+    }
+
+    function atualizarCarimboImpressao() {
+      if (!DOM.printTimestamp) {
+        return;
+      }
+
+      DOM.printTimestamp.textContent = obterTextoCarimboImpressao();
+    }
+
+    function clonarEstadosSecoes(secoes) {
+      const copia = {};
+
+      Object.keys(secoes || {}).forEach(function (chave) {
+        copia[chave] = Object.assign({}, secoes[chave]);
+      });
+
+      return copia;
+    }
+
+    function fecharAccordionsDasSecoes() {
+      Object.keys(appState.futuros.secoes || {}).forEach(function (chave) {
+        if (appState.futuros.secoes[chave]) {
+          appState.futuros.secoes[chave].expandido = '';
+        }
+      });
+    }
+
+    function prepararModoImpressao() {
+      if (appState.modoImpressao) {
+        return;
+      }
+
+      appState.snapshotImpressao = clonarEstadosSecoes(appState.futuros.secoes);
+      appState.modoImpressao = true;
+      fecharAccordionsDasSecoes();
+      ocultarTooltipContrato();
+      atualizarCarimboImpressao();
+      renderizarCamadaPrincipal(true);
+    }
+
+    function restaurarModoImpressao() {
+      if (!appState.modoImpressao) {
+        return;
+      }
+
+      if (appState.snapshotImpressao) {
+        appState.futuros.secoes = clonarEstadosSecoes(appState.snapshotImpressao);
+      }
+
+      appState.snapshotImpressao = null;
+      appState.modoImpressao = false;
+      ocultarTooltipContrato();
+      renderizarCamadaPrincipal(true);
+    }
+
+    // Registra os eventos de interação do painel.
+    function configurarEventosIniciais() {
+      DOM.themeToggle.addEventListener('click', alternarTema);
+      DOM.botaoTopo.addEventListener('click', voltarAoTopo);
+      DOM.exportarTudo.addEventListener('click', exportarCSVGlobal);
+      DOM.limparFiltros.addEventListener('click', limparFiltrosGlobais);
+      ['processo', 'modalidade', 'tipo', 'ano'].forEach(function (campo) {
+        DOM.filtros[campo].addEventListener('change', processarAlteracaoFiltros);
+      });
+      DOM.filtros.busca.addEventListener('input', debounce(processarAlteracaoFiltros, 300));
+      window.addEventListener('scroll', atualizarBotaoTopo, { passive: true });
+      window.addEventListener('scroll', ocultarTooltipContrato, { passive: true });
+      window.addEventListener('resize', ocultarTooltipContrato);
+      window.addEventListener('resize', atualizarOffsetNavegacaoSticky);
+      window.addEventListener('beforeprint', prepararModoImpressao);
+      window.addEventListener('afterprint', restaurarModoImpressao);
+
+      if ('matchMedia' in window) {
+        const mediaImpressao = window.matchMedia('print');
+
+        if ('addEventListener' in mediaImpressao) {
+          mediaImpressao.addEventListener('change', function (evento) {
+            if (evento.matches) {
+              prepararModoImpressao();
+              return;
+            }
+
+            restaurarModoImpressao();
+          });
+        }
+      }
+    }
+
+    // Consolida a carga inicial dos dados, filtros e renderização principal.
+    function inicializarDadosBase() {
+      const fonte = obterFonteContratosSegura();
+
+      if (fonte.erro) {
+        appState.contratos = [];
+        appState.erroDados = fonte.erro;
+        appState.avisos = [];
+        mostrarMensagemDados(fonte.erro, 'erro');
+        return;
+      }
+
+      const resultado = validarContratos(fonte.contratos);
+      appState.contratos = resultado.contratos;
+      appState.erroDados = resultado.erro;
+      appState.avisos = resultado.avisos;
+      resetarEstadosFuturos();
+
+      if (resultado.erro) {
+        mostrarMensagemDados(resultado.erro, 'erro');
+        renderizarCardsGlobais([]);
+        renderizarNavegacaoCategorias(calcularContagensPorCategoria(agruparPorCategoria([])));
+        renderizarSecoesCategorias(agruparPorCategoria([]));
+        renderizarSecaoSemVigencia([]);
+        return;
+      }
+
+      popularFiltrosGlobais(appState.contratos);
+      aplicarFiltrosDaURL();
+      appState.filtros = obterFiltrosDoDOM();
+      mostrarMensagemDados('', 'info');
+      renderizarCamadaPrincipal(true);
+    }
+
+    // Ponto de entrada da aplicação com dados saneados e interações ativas.
+    function iniciarAplicacao() {
+      inicializarTema();
+      atualizarBarraUltimaAtualizacao();
+      configurarEventosIniciais();
+      inicializarDadosBase();
+      atualizarBotaoTopo();
+    }
+
+    iniciarAplicacao();
+  </script>
+</body>
+</html>
