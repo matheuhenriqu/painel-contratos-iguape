@@ -204,43 +204,67 @@
     }
 
     .site-header__inner {
-      min-height: 88px;
+      min-height: 108px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding-block: 16px;
+      gap: 22px;
+      padding-block: 18px 20px;
     }
 
     .site-header__brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 18px;
       min-width: 0;
     }
 
     .site-header__selo {
-      width: 58px;
-      height: 58px;
+      width: clamp(128px, 18vw, 168px);
+      min-height: 62px;
       flex: 0 0 auto;
-      border-radius: 14px;
-      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 18px;
+      display: flex;
       align-items: center;
       justify-content: center;
       border: 1px solid var(--borda);
-      background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--fundo-a) 88%, var(--accent-light)));
-      color: var(--primaria);
+      background: linear-gradient(180deg, #ffffff, color-mix(in srgb, #ffffff 72%, var(--accent-light)));
       box-shadow: var(--sombra-leve);
-      font-family: 'Roboto Slab', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+    }
+
+    html.dark .site-header__selo {
+      border-color: color-mix(in srgb, #ffffff 14%, var(--borda));
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--cabecalho) 78%, #08111d),
+        color-mix(in srgb, var(--header-fundo) 88%, #04070c)
+      );
+    }
+
+    .site-header__logo {
+      width: 100%;
+      max-width: 144px;
+      height: auto;
+    }
+
+    .site-header__logo--escura {
+      display: none;
+    }
+
+    html.dark .site-header__logo--clara {
+      display: none;
+    }
+
+    html.dark .site-header__logo--escura {
+      display: block;
     }
 
     .site-header__copy {
       min-width: 0;
       display: grid;
-      gap: 4px;
+      gap: 6px;
+      max-width: 64ch;
     }
 
     .site-header__municipio,
@@ -252,20 +276,30 @@
     }
 
     .site-header__municipio {
-      font-size: 1.15rem;
+      font-size: clamp(1.08rem, 1.4vw, 1.34rem);
+      letter-spacing: 0.01em;
       color: var(--texto);
     }
 
     .site-header__titulo {
-      font-size: 1.08rem;
-      text-align: right;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 16px;
+      border: 1px solid color-mix(in srgb, var(--primaria) 28%, var(--borda));
+      border-radius: 16px;
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 72%, var(--accent-light)), var(--fundo-a));
+      box-shadow: var(--sombra-leve);
+      font-size: 1.02rem;
+      text-align: center;
       color: var(--primaria);
     }
 
     .site-header__apoio {
       margin: 0;
       color: var(--texto-suave);
-      font-size: 0.94rem;
+      font-size: 0.96rem;
     }
 
     .site-header__acoes {
@@ -273,6 +307,8 @@
       align-items: center;
       gap: 14px;
       flex: 0 0 auto;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .print-timestamp {
@@ -284,8 +320,8 @@
     }
 
     .theme-toggle {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       border: 1px solid color-mix(in srgb, var(--primaria) 28%, var(--borda));
       border-radius: 999px;
       background: var(--primaria);
@@ -315,13 +351,14 @@
     }
 
     .botao-acao {
-      min-height: 42px;
-      padding: 10px 14px;
-      border-radius: 10px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 12px;
       border: 1px solid var(--primaria);
       background: var(--primaria);
       color: #ffffff;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.01em;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -357,25 +394,25 @@
     }
 
     main {
-      padding-block: 20px 40px;
+      padding-block: 24px 48px;
     }
 
     .update-bar {
       margin-bottom: 18px;
       border: 1px solid var(--borda);
       border-radius: var(--raio);
-      background: color-mix(in srgb, var(--fundo-a) 82%, var(--accent-light));
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 62%, var(--accent-light)), var(--fundo-a));
       box-shadow: var(--sombra-leve);
     }
 
     .update-bar__inner {
-      min-height: 54px;
+      min-height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      padding: 12px 16px;
+      padding: 14px 18px;
     }
 
     .update-bar__label {
@@ -394,7 +431,7 @@
     .update-bar__text {
       margin: 0;
       color: var(--texto-suave);
-      font-size: 0.92rem;
+      font-size: 0.94rem;
     }
 
     .status-dados {
@@ -422,10 +459,10 @@
     }
 
     .area-bloco {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
       border: 1px solid var(--borda);
       border-radius: var(--raio);
-      background: var(--fundo-a);
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 55%, var(--accent-light)), var(--fundo-a));
       box-shadow: var(--sombra-leve);
       overflow: clip;
     }
@@ -438,9 +475,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
-      padding: 18px 18px 12px;
+      padding: 20px 20px 14px;
       border-bottom: 1px solid color-mix(in srgb, var(--borda) 78%, transparent);
     }
 
@@ -459,24 +496,27 @@
     }
 
     .area-bloco__conteudo {
-      padding: 18px;
+      padding: 20px;
     }
 
     .indicadores-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 14px;
     }
 
     .painel-card {
-      min-height: 118px;
-      padding: 16px;
+      min-height: 132px;
+      padding: 18px;
       border: 1px solid var(--borda);
-      border-radius: var(--raio-sm);
-      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 82%, var(--accent-light)), var(--fundo-a));
+      border-radius: 16px;
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 86%, var(--accent-light)), var(--fundo-a));
       box-shadow: var(--sombra-leve);
       position: relative;
       overflow: hidden;
+      display: grid;
+      gap: 12px;
+      align-content: start;
     }
 
     .painel-card::before {
@@ -486,6 +526,18 @@
       width: 100%;
       height: 4px;
       background: linear-gradient(90deg, var(--primaria), var(--secundaria));
+    }
+
+    .painel-card::after {
+      content: '';
+      position: absolute;
+      top: -34px;
+      right: -24px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--primaria) 10%, transparent);
+      pointer-events: none;
     }
 
     .painel-card__rotulo {
@@ -521,28 +573,36 @@
     .filtros-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 14px;
     }
 
     .campo {
       display: grid;
-      gap: 6px;
+      gap: 7px;
     }
 
     .campo label {
-      font-size: 0.92rem;
-      font-weight: 500;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--texto-suave);
+      letter-spacing: 0.01em;
     }
 
     .campo select,
     .campo input {
       width: 100%;
-      min-height: 44px;
-      border-radius: 10px;
+      min-height: 48px;
+      border-radius: 12px;
       border: 1px solid var(--borda);
-      padding: 10px 12px;
-      background: var(--fundo-a);
+      padding: 12px 14px;
+      background: color-mix(in srgb, var(--fundo-a) 90%, var(--accent-light));
       color: var(--texto);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .campo select:focus,
+    .campo input:focus {
+      border-color: color-mix(in srgb, var(--primaria) 58%, var(--borda));
     }
 
     .campo select:disabled,
@@ -567,6 +627,7 @@
       background: linear-gradient(180deg, var(--secundaria), var(--primaria));
       box-shadow: 0 12px 28px rgba(17, 53, 103, 0.16);
       margin-bottom: 18px;
+      backdrop-filter: blur(10px);
     }
 
     .nav-categorias__lista {
@@ -575,6 +636,7 @@
       padding: 12px;
       margin: 0;
       overflow-x: auto;
+      flex-wrap: wrap;
       list-style: none;
       scrollbar-width: thin;
     }
@@ -630,7 +692,7 @@
     .secao-categoria {
       border: 1px solid var(--borda);
       border-radius: var(--raio);
-      background: var(--fundo-a);
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 48%, var(--accent-light)), var(--fundo-a));
       box-shadow: var(--sombra-leve);
       overflow: clip;
       scroll-margin-top: var(--offset-secao);
@@ -680,15 +742,15 @@
     .secao-categoria__cards {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 10px;
+      gap: 12px;
       padding: 16px 18px 0;
     }
 
     .secao-categoria__card {
-      min-height: 92px;
-      padding: 14px;
+      min-height: 98px;
+      padding: 15px;
       border: 1px solid var(--borda);
-      border-radius: 12px;
+      border-radius: 14px;
       background: color-mix(in srgb, var(--fundo-a) 84%, var(--accent-light));
       box-shadow: var(--sombra-leve);
     }
@@ -743,8 +805,8 @@
 
     .tabela-wrapper {
       border: 1px solid var(--borda);
-      border-radius: 12px;
-      background: var(--fundo-a);
+      border-radius: 14px;
+      background: linear-gradient(180deg, color-mix(in srgb, #ffffff 40%, var(--accent-light)), var(--fundo-a));
       overflow-x: auto;
       overflow-y: hidden;
       scrollbar-width: thin;
@@ -1152,6 +1214,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .campo--busca {
+        grid-column: 1 / -1;
+      }
+
       .secao-categoria__cards {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
@@ -1175,26 +1241,80 @@
       }
 
       .filtros-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(250px, 1.35fr);
+      }
+
+      .secao-categoria__cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 560px) and (max-width: 767px) {
+      .indicadores-grid,
+      .secao-categoria__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 767px) {
       .site-header__inner {
-        align-items: flex-start;
+        min-height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding-block: 16px 18px;
       }
 
       .site-header__brand {
-        align-items: flex-start;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .site-header__selo {
+        width: clamp(118px, 36vw, 148px);
+        min-height: 56px;
+        padding: 8px 10px;
+        border-radius: 16px;
+      }
+
+      .site-header__copy {
+        gap: 5px;
+        max-width: none;
+        width: 100%;
       }
 
       .site-header__acoes {
         width: 100%;
         justify-content: space-between;
+        align-items: center;
       }
 
       .site-header__titulo {
+        flex: 1 1 auto;
         text-align: left;
+        justify-content: flex-start;
+        font-size: 0.96rem;
+        padding: 10px 14px;
+      }
+
+      .update-bar__inner,
+      .area-bloco__cabecalho {
+        align-items: flex-start;
+      }
+
+      .area-bloco__cabecalho {
+        padding: 16px 16px 12px;
+      }
+
+      .area-bloco__conteudo,
+      .secao-categoria__corpo {
+        padding: 16px;
+      }
+
+      .secao-categoria__cards {
+        padding: 14px 16px 0;
       }
 
       .update-bar__text {
@@ -1211,6 +1331,16 @@
 
       .secao-categoria__acoes .botao-acao {
         width: 100%;
+      }
+
+      .nav-categorias__lista {
+        flex-wrap: nowrap;
+        padding: 10px;
+        scroll-snap-type: x proximity;
+      }
+
+      .nav-categorias__item {
+        scroll-snap-align: start;
       }
 
       .botao-topo {
@@ -1387,7 +1517,10 @@
     </div>
     <div class="container-principal site-header__inner">
       <div class="site-header__brand">
-        <div class="site-header__selo" aria-hidden="true">PMI</div>
+        <div class="site-header__selo" role="img" aria-label="Logo da Prefeitura Municipal de Iguape">
+          <img class="site-header__logo site-header__logo--clara" src="assets/logo-prefeitura-iguape.png" alt="">
+          <img class="site-header__logo site-header__logo--escura" src="assets/logo-prefeitura-iguape-branca.png" alt="" aria-hidden="true">
+        </div>
         <div class="site-header__copy">
           <h1 class="site-header__municipio">Prefeitura Municipal de Iguape — SP</h1>
           <p class="site-header__apoio">Ambiente institucional preparado para consolidação pública de contratos administrativos</p>
@@ -1484,7 +1617,7 @@
                 <option>Todos os anos</option>
               </select>
             </div>
-            <div class="campo">
+            <div class="campo campo--busca">
               <label for="filtro-busca">Busca</label>
               <input id="filtro-busca" type="search" placeholder="Buscar por fornecedor ou objeto" autocomplete="off" spellcheck="false">
             </div>
