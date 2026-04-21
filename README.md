@@ -1,6 +1,6 @@
-# Painel de Contratos de Iguape
+# Painel de Contratos
 
-Painel estatico para consulta e acompanhamento de contratos administrativos da Prefeitura Municipal de Iguape/SP.
+Painel estatico para consulta e acompanhamento de contratos administrativos da prefeitura municipal.
 
 Todos os dados publicados no site sao gerados a partir de uma planilha Excel mantida fora do repositorio.
 
